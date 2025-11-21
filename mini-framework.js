@@ -1,43 +1,58 @@
 // Implementation of the `Idea - quote-unquote-framework` (See our notes repo, [Nov 2025])
 
-// Helper functions (~30 lines total)
 export const qs = (...args) => {
     if (args.length >= 2) return args[0].querySelector(args[1]);
     else                 return document.querySelector(args[0]);
 };
 export const listen = function (obj, eventname, callback) { obj.addEventListener(eventname, callback) }
 
+ /* outlet() is meant for components since you can't define ids/classes on the <mf-component> root node directly. 
+    Usage: 
+        - Give the component an identifier `outlet('my-component-id', componentHTML)`
+        - Later, get a reference to the <mf-component> root node using qs('.my-component-id > *') 
+        [Nov 2025] 
+    TODO: 
+        -> Maybe move this into the `Idea - quote-unquote-framework` doc.
+*/
+export const outlet = (id, innerHTML) => {
+    return `<div data-is-outlet class="${id}" style="display: contents">${innerHTML}</div>`
+}
+
+export const getOutlet = (...args) => {
+    if (args.length === 1)  return qs(`.${args[0]} > *`);
+    else                    return qs(args[0], `.${args[0]} > *`)
+}
+
 const instanceCallbacks = new Map();
 let instanceCounter = 0;
 let xComponentIsInitialized = false;
 
-export function wrapInCustomElement(innerHtml, { mounted }) {
-    const id = `inst-${instanceCounter++}`;
+export function wrapInCustomElement(debugName, innerHtml, { mounted }) {
+    const id = `${instanceCounter++}`;
     instanceCallbacks.set(id, mounted);
 
     if (!xComponentIsInitialized) {
         class CustomElement extends HTMLElement {
             connectedCallback() {
-                const id = this.dataset.instanceId;
+                const id = this.dataset.id; // Retrieve data-id=...
                 if (id && instanceCallbacks.has(id)) {
                     instanceCallbacks.get(id).call(this);
                     instanceCallbacks.delete(id);
                 }
             }
         }
-        customElements.define('x-component', CustomElement);
+        customElements.define('mf-component', CustomElement);
         xComponentIsInitialized = true;
     }
 
-    return `<x-component data-instance-id="${id}">${innerHtml}</x-component>`;
+    return `<mf-component data-name="${debugName}" data-id="${id}">${innerHtml}</mf-component>`; // The data-name is just to make the HTML more readable. Not sure this is good / elegant.
 }
 
 export const observe = function (obj, prop, callback, triggerImmediately = true) {
 
-    const callbacksKey = `__observers_${prop}__`;
+    const callbacksKey = `__mf-observers_${prop}__`;
 
-    if (!obj[callbacksKey]) {
-        // First time observing this property
+    if (!obj[callbacksKey]) { // First time observing this property
         let value = obj[prop];
         obj[callbacksKey] = [];
 

@@ -1,5 +1,5 @@
 
-import { observe, listen, observeMultiple, qs, wrapInCustomElement } from "./mini-framework.js";
+import {observe, listen, outlet, qs, wrapInCustomElement, getOutlet} from "./mini-framework.js";
 
 // Interactive Components
 
@@ -34,8 +34,9 @@ function Counter({ initialCount = 0, color = '#4a90e2' }) {
     </div>
   `;
 
-  html = wrapInCustomElement(html, {
+  html = wrapInCustomElement("Counter", html, {
       mounted() {
+          /** @typedef {{count: number}} Counter */
           this.count = initialCount;
 
           observe(this, 'count', count => {
@@ -71,20 +72,22 @@ function AnimatedCard({ title, description, color = '#e74c3c' }) {
     </div>
   `;
 
-  html = wrapInCustomElement(html, {
-    mounted() {
+    html = wrapInCustomElement("AnimatedCard", html, {
+        mounted() {
 
-        listen(qs(this, '.card'), 'mouseenter', () => {
-            qs(this, '.card').style.transform = 'scale(1.05) translateY(-5px)';
-            qs(this, '.card').style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
-      });
+            let card = qs(this, ".card");
 
-        listen(qs(this, '.card'), 'mouseleave', () => {
-            qs(this, '.card').style.transform = 'scale(1) translateY(0)';
-            qs(this, '.card').style.boxShadow = 'none';
-      });
-    }
-  });
+            listen(card, 'mouseenter', () => {
+                card.style.transform = 'scale(1.05) translateY(-5px)';
+                card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
+            });
+
+            listen(card, 'mouseleave', () => {
+                card.style.transform = 'scale(1) translateY(0)';
+                card.style.boxShadow = 'none';
+            });
+        }
+    });
 
   return html;
 }
@@ -124,13 +127,13 @@ function ToggleSwitch({ label = 'Toggle', initialState = false }) {
       label { font-size: 16px; color: #333; }
     } </style>
     <div class="toggle-container">
-      <div class="switch ${initialState ? 'active' : ''}">
-        <div class="slider"></div>
-      </div>
-      <label>${label}</label>
+        <div class="switch ${initialState ? 'active' : ''}">
+            <div class="slider"></div>
+        </div>
+        <label>${label}</label>
     </div>
   `;
-    html = wrapInCustomElement(html, {
+    html = wrapInCustomElement("ToggleSwitch", html, {
         mounted() {
 
             const switchEl = qs(this, '.switch');
@@ -143,38 +146,39 @@ function ToggleSwitch({ label = 'Toggle', initialState = false }) {
             });
         }
     });
-
+    
   return html;
 }
 
 // Main render function
 export function renderInteractiveStuff() {
 
-  let html = `
-    <h1 style="text-align: center; color: #333;">Interactive Components Demo</h1>
-    <div style="display: grid; gap: 20px; margin: 30px 30px 400px 30px;">
-      ${Counter({ initialCount: 0, color: '#4a90e2' })}
-      ${Counter({ initialCount: 100, color: '#9b59b6' })}
-      ${AnimatedCard({
-        title: 'Hover me!',
-        description: 'This card animates on hover',
-        color: '#e74c3c'
-      })}
-      ${AnimatedCard({
-        title: 'Interactive Card',
-        description: 'Built with vanilla JS',
-        color: '#f39c12'
-      })}
-      ${ToggleSwitch({ label: 'Dark Mode', initialState: false })}
-      ${ToggleSwitch({ label: 'Notifications', initialState: true })}
-    </div>
-  `;
-  html = wrapInCustomElement(html, { mounted() {
-
-      observe(qs(this, '.counter-container').parentNode, 'count', count => { /* .parentNode is a bit sloppy */
-          console.log(`Count changed to: ${count}`);
-      })
-
-  }})
-  return html;
+    let html = `
+        <h1 style="text-align: center; color: #333;">Interactive Components Demo</h1>
+        <div style="display: grid; gap: 20px; margin: 30px 30px 400px 30px;">
+        ${outlet('first-counter', Counter({ initialCount: 0, color: '#4a90e2' }))}
+        ${Counter({ initialCount: 100, color: '#9b59b6' })}
+        ${AnimatedCard({
+            title: 'Hover me!',
+            description: 'This card animates on hover',
+            color: '#e74c3c'
+        })}
+        ${AnimatedCard({
+            title: 'Interactive Card',
+            description: 'Built with vanilla JS',
+            color: '#f39c12'
+        })}
+        ${ToggleSwitch({ label: 'Dark Mode', initialState: false })}
+        ${ToggleSwitch({ label: 'Notifications', initialState: true })}
+        </div>
+    `;
+    html = wrapInCustomElement("InteractiveStuff", html, {
+        mounted() {
+            let counter = /**@type{Counter}*/getOutlet('first-counter');
+            observe(counter, 'count', count => {
+                console.log(`Count changed to: ${count}`);
+            })
+        }
+    })
+    return html;
 }
