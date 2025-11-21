@@ -97,7 +97,7 @@ function ToggleSwitch({ label = 'Toggle', initialState = false }) {
         align-items: center;
         gap: 10px;
         padding: 15px;
-        background: #f5f5f5;
+        background-color: oklch(0.823 0 89.876 / 0.12);
         border-radius: 8px;
       }
       .switch {
@@ -152,7 +152,7 @@ export function renderInteractiveStuff() {
 
   let html = `
     <h1 style="text-align: center; color: #333;">Interactive Components Demo</h1>
-    <div style="display: grid; gap: 20px; margin-top: 30px;">
+    <div style="display: grid; gap: 20px; margin: 30px 30px 400px 30px;">
       ${Counter({ initialCount: 0, color: '#4a90e2' })}
       ${Counter({ initialCount: 100, color: '#9b59b6' })}
       ${AnimatedCard({
