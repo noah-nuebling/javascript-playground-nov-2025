@@ -8,43 +8,56 @@ export const listen = function (obj, eventname, callback) { obj.addEventListener
 
  /* outlet() is meant for components since you can't define ids/classes on the <mf-component> root node directly from the outside.
     Usage: 
-        - Give the component an identifier `<htmlstuff>${MyComponent().outlet('my-component-id')}</htmlstuff>`
-        - Later, get a reference to the <mf-component> root node of MyComponent() using getOutlet('my-component-id')
+        - Give the component an identifier in your declarative UI:
+            let html = `...<htmlstuff>${ MyComponent().outlet('my-component-id') }</htmlstuff>...`
+        - After the component has been rendered in the DOM, get a reference, so you can observe its properties etc.
+            let myComponent = getOutlet('my-component-id')
         [Nov 2025] 
     TODO: 
         -> Maybe move this into the `Idea - quote-unquote-framework` doc.
 */
 String.prototype.outlet = function (id) {
-    return `<div class="outlet ${id}" style="display: contents">${this}</div>`
+    return `<div class="outlet ${id}" style="display: contents">${this}</div>` /// LLM told me to use `style="display: contents"`. Possibly paranoia/overengineering.
 }
 
 export const getOutlet = (root, id) => {
     return qs(root, `.outlet.${id} > *`)
 }
 
-const instanceCallbacks = new Map();
+let debounceTimers = {}
+const debounce = (id, delay, fn) => {
+    clearTimeout(debounceTimers[id]);
+    debounceTimers[id] = setTimeout(fn, delay);
+};
+
+const connectedCallbacksProvidedByUser = {};
 let instanceCounter = 0;
-let xComponentIsInitialized = false;
 
-export function wrapInCustomElement(innerHtml, { mounted }) {
-    const id = `${instanceCounter++}`;
-    instanceCallbacks.set(id, mounted);
+export function wrapInCustomElement(innerHtml, { connected, dbgname }) {
+    
+    const instanceid = `${instanceCounter++}`;
+    
+    connectedCallbacksProvidedByUser[instanceid] = connected;
 
-    if (!xComponentIsInitialized) {
-        class CustomElement extends HTMLElement {
+    if (!window.customElements.get('mf-component')) {
+
+        let pendingConnectedCallbacks = [];
+        
+        window.customElements.define('mf-component', class extends HTMLElement {    
             connectedCallback() {
-                const id = this.dataset.id; // Retrieve data-id=...
-                if (id && instanceCallbacks.has(id)) {
-                    instanceCallbacks.get(id).call(this);
-                    instanceCallbacks.delete(id);
-                }
+                pendingConnectedCallbacks.push(this); // Call connectedCallback() in reverse order per each runLoop iteration, so that child-components are initialized before their parents. () [Nov 2025]
+                debounce("connectedCallback", 0, () => {
+                    for (let this_ of pendingConnectedCallbacks.toReversed()) {
+                        connectedCallbacksProvidedByUser[this_.dataset.instanceid].call(this_);
+                        delete connectedCallbacksProvidedByUser[this_.dataset.instanceid];
+                    }
+                    pendingConnectedCallbacks = [];
+                });
             }
-        }
-        customElements.define('mf-component', CustomElement);
-        xComponentIsInitialized = true;
+        });
     }
 
-    return `<mf-component data-id="${id}">${innerHtml}</mf-component>`;
+    return `<mf-component data-dbgname="${dbgname}" data-instanceid="${instanceid}">${innerHtml}</mf-component>`;
 }
 
 export const observe = function (obj, prop, callback, triggerImmediately = true) {

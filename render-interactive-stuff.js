@@ -3,6 +3,22 @@ import {observe, listen, qs, wrapInCustomElement, getOutlet} from "./mini-framew
 
 // Interactive Components
 
+function UnnecessaryChild(msg, innerHTML) {
+
+    /// Child component that does nothing
+    ///     - To test order of connectedCallback() invocations.
+
+    let html = `<!-- Hello hello --> ${innerHTML}`
+
+    html = wrapInCustomElement(html, {
+        connected() {
+        },
+        dbgname: `${UnnecessaryChild.name}:${msg}`,
+    })
+
+    return html;
+}
+
 function Counter({ initialCount = 0, color = '#4a90e2' }) {
   let html = `
     <style> @scope {
@@ -31,11 +47,12 @@ function Counter({ initialCount = 0, color = '#4a90e2' }) {
       <button class="increment">+</button>
       <button class="decrement">-</button>
       <button class="reset">Reset</button>
+      ${UnnecessaryChild('outer', UnnecessaryChild('inner', `<p>Hi there.</p>`))}
     </div>
   `;
 
   html = wrapInCustomElement(html, {
-      mounted() {
+      connected() {
           /** @typedef {{count: number}} Counter */
           this.count = initialCount;
 
@@ -46,7 +63,8 @@ function Counter({ initialCount = 0, color = '#4a90e2' }) {
           listen(qs(this, '.increment'), 'click', () => { this.count++; });
           listen(qs(this, '.decrement'), 'click', () => { this.count--; });
           listen(qs(this, '.reset'),     'click', () => { this.count = initialCount; });
-      }
+      },
+      dbgname: Counter.name,
   });
 
   return html;
@@ -73,7 +91,7 @@ function AnimatedCard({ title, description, color = '#e74c3c' }) {
   `;
 
     html = wrapInCustomElement(html, {
-        mounted() {
+        connected() {
 
             let card = qs(this, ".card");
 
@@ -86,7 +104,8 @@ function AnimatedCard({ title, description, color = '#e74c3c' }) {
                 card.style.transform = 'scale(1) translateY(0)';
                 card.style.boxShadow = 'none';
             });
-        }
+        },
+        dbgname: AnimatedCard.name,
     });
 
   return html;
@@ -134,7 +153,7 @@ function ToggleSwitch({ label = 'Toggle', initialState = false }) {
     </div>
   `;
     html = wrapInCustomElement(html, {
-        mounted() {
+        connected() {
 
             const switchEl = qs(this, '.switch');
 
@@ -144,7 +163,8 @@ function ToggleSwitch({ label = 'Toggle', initialState = false }) {
                 isActive = !isActive;
                 switchEl.classList.toggle('active', isActive);
             });
-        }
+        },
+        dbgname: ToggleSwitch.name,
     });
     
   return html;
@@ -173,12 +193,14 @@ export function renderInteractiveStuff() {
         </div>
     `;
     html = wrapInCustomElement(html, {
-        mounted() {
+        connected() {
             let counter = /**@type{Counter}*/getOutlet(this, 'first-counter');
+            console.log(`Initial count: ${counter.count}`);
             observe(counter, 'count', count => {
-                console.log(`Count changed to: ${count}`);
+                console.log(`Observed count: ${count}`);
             })
-        }
+        },
+        dbgname: renderInteractiveStuff.name
     })
     return html;
 }
