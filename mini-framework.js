@@ -20,12 +20,13 @@ String.prototype.outlet = function (id) {
     return `<div class="outlet ${id}" style="display: contents">${this}</div>` /// LLM told me to use `style="display: contents"`. Possibly paranoia/overengineering.
 }
 
-export const getOutlet = (root, id) => {
-    return qs(root, `.outlet.${id} > *`)
+export const getOutlet = (...args) => {
+    if (args.length >= 2) return qs(args[0], `.outlet.${args[1]} > *`);
+    else                  return qs(document, `.outlet.${args[0]} > *`);
 }
 
 let debounceTimers = {}
-const debounce = (id, delay, fn) => {
+export const debounce = (id, delay, fn) => {
     clearTimeout(debounceTimers[id]);
     debounceTimers[id] = setTimeout(fn, delay);
 };
@@ -57,7 +58,7 @@ export function wrapInCustomElement(innerHtml, { connected, dbgname }) {
         });
     }
 
-    return `<mf-component data-dbgname="${dbgname}" data-instanceid="${instanceid}">${innerHtml}</mf-component>`;
+    return `<mf-component data-dbgname="${dbgname}" data-instanceid="${instanceid}" style="display: contents">${innerHtml}</mf-component>`;
 }
 
 export const observe = function (obj, prop, callback, triggerImmediately = true) {

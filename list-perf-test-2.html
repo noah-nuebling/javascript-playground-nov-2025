@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+  <div class="controls">
+      <style> @scope {
+          position: fixed;
+          background-color: white;
+          z-index: 10;
+      }</style>
+    <label>
+      Approach:
+      <select id="approach">
+        <option value="placeholder">Placeholder</option>
+        <option value="virtual">Virtual</option>
+        <option value="none">No Optimization</option>
+        <option value="content-visibility">Content Visibility</option>
+      </select>
+    </label>
+
+    <label>
+      Item Count:
+      <input type="number" id="itemCount" value="1000" min="100" step="100">
+    </label>
+
+    <button id="renderBtn">Render List</button>
+
+    <span class="stats">
+      <span id="renderTime">Render time: -</span>
+      <span style="margin-left: 20px;" id="fps">FPS: -</span>
+    </span>
+  </div>
+
+  <div class="list-container" id="listContainer">
+      <style> @scope {
+          :scope {
+              height: 100vh;
+              overflow: auto;
+              position: relative;
+          }
+          #listContent {
+              display: block flow;
+              grid-template-columns: repeat(1, 1fr);
+          }
+      }</style>
+    <div class="list-content" id="listContent"></div>
+  </div>
+
+  <script type="module">
+
+    import { List } from './mini-list.js'
+    import { listen, observe, qs, getOutlet } from './mini-framework.js'
+
+    // Global state
+    let currentApproach = null;
+
+    // FPS tracking
+    let lastTime = performance.now();
+    let frames = 0;
+    let fps = 0;
+
+    function updateFPS() {
+      frames++;
+      const now = performance.now();
+      if (now - lastTime >= 1000) {
+        fps = Math.round(frames * 1000 / (now - lastTime));
+        document.getElementById('fps').textContent = `FPS: ${fps}`;
+        frames = 0;
+        lastTime = now;
+      }
+      requestAnimationFrame(updateFPS);
+    }
+    requestAnimationFrame(updateFPS);
+
+    // ===== MAIN CONTROLS =====
+    let currentList = null;
+
+    // Save settings when they change
+    listen(qs('#approach'), 'change', () => {
+      saveScrollState();
+    });
+
+    listen(qs('#itemCount'), 'input', () => {
+        console.log(`Saving itemCount: ${qs('#itemCount').value}`)
+        window.localStorage.setItem('itemCount', qs('#itemCount').value);
+    });
+
+    listen(qs('#renderBtn'), 'click', () => {
+
+      console.log(`renderBtn click`);
+
+      // const container = qs('#listContent');
+      // const scrollContainer = qs('#listContainer');
+
+      // Generate test data
+      function generateItems(count) {
+        const items = [];
+        for (let i = 0; i < count; i++) {
+          items.push({
+            id: i,
+            name: `Item ${i}`,
+            description: `Description for item ${i}`,
+            imageUrl: `https://picsum.photos/seed/${i}/200/150`
+          });
+        }
+        return items;
+      }
+
+
+      if (!getOutlet('dalist')) {
+        qs('#listContent').innerHTML = FastList({
+          preloadSize: 1000,
+          estimateHeight(item) { return 50; },
+          render(item) {
+            //console.log(`Renderrr`);
+            return `
+              <div class="item">
+                <img src="${item.imageUrl}" width="200" height="150"/>
+                <div class="name">${item.name}</div>
+                <div class="desc">${item.description}</div>
+              </div>
+            `;
+          }
+         }).outlet('dalist');
+      }
+
+      qs('#itemCount').value = window.localStorage.getItem('itemCount') ?? 10;
+
+      let scrollContainer = qs('#listContainer');
+
+      setTimeout(() => {
+          const startTime = performance.now();
+
+          getOutlet('dalist').items = generateItems(parseInt(qs('#itemCount').value));
+
+          let savedScrollTop = window.localStorage.getItem('scrollTop');
+          console.log(`Restoring scroll position: ${savedScrollTop}`);
+          scrollContainer.scrollTop = savedScrollTop
+
+          qs('#renderTime').textContent = `Render time: ${Math.round(performance.now() - startTime)}ms`;
+      }, 0);
+
+
+      // Save state on scroll
+      scrollContainer.addEventListener('scroll', (x) => {
+          //console.log(`Saving scrollTop: ${scrollContainer.scrollTop}`)
+          window.localStorage.setItem('scrollTop', scrollContainer.scrollTop)
+      },
+      { passive: true });
+    });
+
+    qs('#renderBtn').click();
+
+  </script>
+</body>
+</html>
