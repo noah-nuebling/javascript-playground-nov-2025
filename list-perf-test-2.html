@@ -1,25 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+    .item { padding: 16px; border-bottom: 1px solid #e0e0e0; background: white; }
+
+    /* Realistic card styles */
+    .card {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      border-bottom: 1px solid #e0e0e0;
+      background: white;
+    }
+    .card img { border-radius: 8px; object-fit: cover; }
+    .card-content { flex: 1; }
+    .card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+    .card-title { font-size: 18px; font-weight: 600; margin: 0; }
+    .card-meta { font-size: 12px; color: #666; }
+    .card-description { color: #333; line-height: 1.5; margin: 8px 0; }
+    .card-tags { display: flex; gap: 8px; margin: 8px 0; }
+    .tag {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .card-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+    .stat { font-size: 14px; color: #666; }
+    .stat-value { font-weight: 600; color: #333; }
+
+    /* Complex card adds more elements */
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .btn {
+      padding: 6px 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .btn-primary { background: #1976d2; color: white; border-color: #1976d2; }
+
+    .progress-bar {
+      height: 6px;
+      background: #f0f0f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4caf50, #8bc34a);
+      transition: width 0.3s;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      background: #ccc;
+      border-radius: 4px;
+    }
+
+    /* Production-quality card with shadows and gradients */
+    .prod-card {
+      background: white;
+      border-radius: 16px;
+      margin: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.12),
+        0 1px 2px rgba(0,0,0,0.24);
+      transition: box-shadow 0.3s ease;
+    }
+    .prod-card:hover {
+      box-shadow:
+        0 10px 20px rgba(0,0,0,0.15),
+        0 6px 6px rgba(0,0,0,0.10);
+    }
+    .prod-image-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+    .prod-image-wrapper img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 16px 16px 0 0;
+    }
+    .prod-gradient-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    }
+    .prod-card-title-overlay {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .prod-content {
+      padding: 20px;
+    }
+    .prod-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .prod-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+    .prod-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+    }
+    .prod-price {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Glassmorphism - very paint-heavy */
+    .glass-card {
+      margin: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px) saturate(180%);
+      -webkit-backdrop-filter: blur(10px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow:
+        0 8px 32px 0 rgba(31, 38, 135, 0.37),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
+      padding: 24px;
+    }
+    .glass-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+      z-index: -1;
+    }
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .glass-image {
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .glass-button {
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 12px 24px;
+      color: white;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
 <body>
   <div class="controls">
       <style> @scope {
-          position: fixed;
+          /*position: fixed;*/
           background-color: white;
           z-index: 10;
+          padding: 16px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       }</style>
     <label>
-      Approach:
-      <select id="approach">
-        <option value="placeholder">Placeholder</option>
-        <option value="virtual">Virtual</option>
-        <option value="none">No Optimization</option>
-        <option value="content-visibility">Content Visibility</option>
+      Rendering:
+      <select id="rendering">
+        <option value="recreate">Destroy/Recreate (FastList)</option>
+        <option value="reuse">Element Reuse (FastListReuse)</option>
       </select>
     </label>
 
     <label>
       Item Count:
       <input type="number" id="itemCount" value="1000" min="100" step="100">
+    </label>
+
+    <label>
+      Complexity:
+      <select id="complexity">
+        <option value="simple">Simple (current)</option>
+        <option value="realistic">Realistic Card</option>
+        <option value="complex">Complex Card</option>
+        <option value="extreme">Extreme</option>
+        <option value="insane">Insane</option>
+        <option value="shadow-dom">Shadow DOM Stress</option>
+        <option value="nested-hell">Deeply Nested</option>
+        <option value="production">Production Card (shadows+gradients)</option>
+        <option value="glassmorphism">Glassmorphism Cards</option>
+      </select>
     </label>
 
     <button id="renderBtn">Render List</button>
@@ -47,7 +270,7 @@
 
   <script type="module">
 
-    import { List } from './mini-list.js'
+    import { FastList } from './mini-list.js'
     import { listen, observe, qs, getOutlet } from './mini-framework.js'
 
     // Global state
@@ -74,14 +297,41 @@
     // ===== MAIN CONTROLS =====
     let currentList = null;
 
+    // Restore rendering mode from localStorage
+    const savedRendering = window.localStorage.getItem('rendering');
+    if (savedRendering) {
+      qs('#rendering').value = savedRendering;
+    }
+
     // Save settings when they change
-    listen(qs('#approach'), 'change', () => {
-      saveScrollState();
+    listen(qs('#rendering'), 'change', () => {
+      // Save and reload to recreate the list component
+      window.localStorage.setItem('rendering', qs('#rendering').value);
+      window.location.reload();
     });
 
     listen(qs('#itemCount'), 'input', () => {
         console.log(`Saving itemCount: ${qs('#itemCount').value}`)
         window.localStorage.setItem('itemCount', qs('#itemCount').value);
+    });
+
+    listen(qs('#complexity'), 'change', () => {
+      // Add/remove animated background for glassmorphism
+      const isGlass = qs('#complexity').value === 'glassmorphism';
+      let bg = document.querySelector('.glass-bg');
+      if (isGlass && !bg) {
+        bg = document.createElement('div');
+        bg.className = 'glass-bg';
+        document.body.appendChild(bg);
+      } else if (!isGlass && bg) {
+        bg.remove();
+      }
+
+      // Force re-render with new complexity
+      if (getOutlet('dalist')) {
+        const currentItems = getOutlet('dalist').items;
+        getOutlet('dalist').items = [...currentItems];
+      }
     });
 
     listen(qs('#renderBtn'), 'click', () => {
@@ -98,27 +348,317 @@
           items.push({
             id: i,
             name: `Item ${i}`,
+            title: `Amazing Product ${i}`,
             description: `Description for item ${i}`,
-            imageUrl: `https://picsum.photos/seed/${i}/200/150`
+            longDescription: `This is a much longer description for item ${i}. It contains multiple sentences and provides more detail about the product or content. It helps simulate realistic content that users might encounter in a real application.`,
+            imageUrl: `https://picsum.photos/seed/${i}/200/150`,
+            author: `Author ${i % 20}`,
+            date: new Date(Date.now() - Math.random() * 10000000000).toLocaleDateString(),
+            likes: Math.floor(Math.random() * 1000),
+            comments: Math.floor(Math.random() * 100),
+            views: Math.floor(Math.random() * 10000),
+            tags: ['JavaScript', 'Performance', 'WebDev'].slice(0, (i % 3) + 1),
+            progress: Math.floor(Math.random() * 100),
+            price: (Math.random() * 100).toFixed(2),
+            rating: (Math.random() * 2 + 3).toFixed(1)
           });
         }
         return items;
       }
 
+      const renderFunctions = {
+        simple: (item) => `
+          <div class="item">
+            <img src="${item.imageUrl}" width="200" height="150"/>
+            <div class="name">${item.name}</div>
+            <div class="desc">${item.description}</div>
+          </div>
+        `,
+
+        realistic: (item) => `
+          <div class="card">
+            <img src="${item.imageUrl}" width="200" height="150"/>
+            <div class="card-content">
+              <div class="card-header">
+                <h3 class="card-title">${item.title}</h3>
+                <span class="card-meta">${item.date}</span>
+              </div>
+              <div class="card-description">${item.longDescription}</div>
+              <div class="card-tags">
+                ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+              </div>
+              <div class="card-stats">
+                <span class="stat"><span class="stat-value">${item.likes}</span> likes</span>
+                <span class="stat"><span class="stat-value">${item.comments}</span> comments</span>
+                <span class="stat"><span class="stat-value">${item.views}</span> views</span>
+              </div>
+            </div>
+          </div>
+        `,
+
+        complex: (item) => `
+          <div class="card">
+            <img src="${item.imageUrl}" width="200" height="150"/>
+            <div class="card-content">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">${item.title}</h3>
+                  <span class="card-meta">By ${item.author} • ${item.date}</span>
+                </div>
+                <div class="avatar"></div>
+              </div>
+              <div class="card-description">${item.longDescription}</div>
+              <div class="card-tags">
+                ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${item.progress}%"></div>
+              </div>
+              <div class="card-stats">
+                <span class="stat"><span class="icon"></span> <span class="stat-value">${item.likes}</span> likes</span>
+                <span class="stat"><span class="icon"></span> <span class="stat-value">${item.comments}</span> comments</span>
+                <span class="stat"><span class="icon"></span> <span class="stat-value">${item.views}</span> views</span>
+                <span class="stat"><span class="icon"></span> <span class="stat-value">★${item.rating}</span></span>
+              </div>
+              <div class="card-actions">
+                <button class="btn btn-primary">View Details</button>
+                <button class="btn">Share</button>
+                <button class="btn">Save</button>
+              </div>
+            </div>
+          </div>
+        `,
+
+        extreme: (item) => {
+          // 3x more elements than complex
+          const extraElements = Array(10).fill(0).map((_, i) =>
+            `<div class="stat"><span class="icon"></span> Extra ${i}</div>`
+          ).join('');
+          return `
+            <div class="card">
+              <img src="${item.imageUrl}" width="200" height="150"/>
+              <div class="card-content">
+                <div class="card-header">
+                  <div>
+                    <h3 class="card-title">${item.title}</h3>
+                    <span class="card-meta">By ${item.author} • ${item.date}</span>
+                  </div>
+                  <div class="avatar"></div>
+                </div>
+                <div class="card-description">${item.longDescription}</div>
+                <div class="card-description">${item.longDescription}</div>
+                <div class="card-tags">
+                  ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                  ${item.tags.map(tag => `<span class="tag">${tag} Pro</span>`).join('')}
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${item.progress}%"></div>
+                </div>
+                <div class="card-stats">
+                  <span class="stat"><span class="icon"></span> <span class="stat-value">${item.likes}</span> likes</span>
+                  <span class="stat"><span class="icon"></span> <span class="stat-value">${item.comments}</span> comments</span>
+                  <span class="stat"><span class="icon"></span> <span class="stat-value">${item.views}</span> views</span>
+                  <span class="stat"><span class="icon"></span> <span class="stat-value">★${item.rating}</span></span>
+                  ${extraElements}
+                </div>
+                <div class="card-actions">
+                  <button class="btn btn-primary">View Details</button>
+                  <button class="btn">Share</button>
+                  <button class="btn">Save</button>
+                  <button class="btn">Download</button>
+                  <button class="btn">Report</button>
+                </div>
+              </div>
+            </div>
+          `;
+        },
+
+        insane: (item) => {
+          // 10x more elements - really pushing it
+          const massiveElements = Array(50).fill(0).map((_, i) =>
+            `<div class="stat" style="padding: 4px;">
+              <span class="icon"></span>
+              <span style="font-size: 12px;">Metric ${i}: ${Math.random().toFixed(2)}</span>
+            </div>`
+          ).join('');
+          const manyButtons = Array(15).fill(0).map((_, i) =>
+            `<button class="btn">Action ${i}</button>`
+          ).join('');
+          return `
+            <div class="card">
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                <img src="${item.imageUrl}" width="100%" height="100"/>
+                <img src="${item.imageUrl}" width="100%" height="100"/>
+                <img src="${item.imageUrl}" width="100%" height="100"/>
+              </div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div>
+                    <h3 class="card-title">${item.title}</h3>
+                    <span class="card-meta">By ${item.author} • ${item.date}</span>
+                  </div>
+                  <div style="display: flex; gap: 4px;">
+                    <div class="avatar"></div>
+                    <div class="avatar"></div>
+                    <div class="avatar"></div>
+                  </div>
+                </div>
+                <div class="card-description">${item.longDescription}</div>
+                <div class="card-description">${item.longDescription}</div>
+                <div class="card-description">${item.longDescription}</div>
+                <div class="card-tags">
+                  ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                  ${item.tags.map(tag => `<span class="tag">${tag} Pro</span>`).join('')}
+                  ${item.tags.map(tag => `<span class="tag">${tag} Plus</span>`).join('')}
+                  ${item.tags.map(tag => `<span class="tag">${tag} Premium</span>`).join('')}
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${item.progress}%"></div></div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${100 - item.progress}%"></div></div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${item.progress / 2}%"></div></div>
+                <div class="card-stats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                  ${massiveElements}
+                </div>
+                <div class="card-actions" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;">
+                  ${manyButtons}
+                </div>
+              </div>
+            </div>
+          `;
+        },
+
+        'shadow-dom': (item) => {
+          // Test with lots of CSS custom properties and filters
+          const heavyStyles = Array(20).fill(0).map((_, i) =>
+            `<div style="
+              filter: blur(0.${i}px) brightness(1.${i});
+              transform: translateZ(0) rotate(${i}deg);
+              backdrop-filter: blur(${i}px);
+              box-shadow: 0 ${i}px ${i*2}px rgba(0,0,0,0.1);
+              background: linear-gradient(${i*10}deg, rgba(${i*10},${i*5},${i*15},0.1), rgba(${i*5},${i*10},${i*20},0.2));
+            " class="stat">Heavy Style ${i}</div>`
+          ).join('');
+          return `
+            <div class="card" style="will-change: transform; contain: layout style paint;">
+              ${heavyStyles}
+            </div>
+          `;
+        },
+
+        'nested-hell': (item) => {
+          // Create deeply nested DOM structure
+          let nested = '<div class="card"><div class="card-content">';
+          for (let i = 0; i < 50; i++) {
+            nested += `<div style="padding: 1px; border: 1px solid rgba(0,0,0,0.05);">
+              <span style="font-size: ${14 - (i % 5)}px;">Level ${i}</span>`;
+          }
+          nested += `<div style="padding: 20px; background: #f5f5f5;">
+            <img src="${item.imageUrl}" width="200" height="150"/>
+            <h3>${item.title}</h3>
+            <p>${item.longDescription}</p>
+          </div>`;
+          for (let i = 0; i < 50; i++) {
+            nested += '</div>';
+          }
+          nested += '</div></div>';
+          return nested;
+        },
+
+        production: (item) => {
+          // Realistic production card with multiple box-shadows, gradients, and rounded corners
+          return `
+            <div class="prod-card">
+              <div class="prod-image-wrapper">
+                <img src="${item.imageUrl}" alt="${item.title}"/>
+                <div class="prod-gradient-overlay"></div>
+                <h3 class="prod-card-title-overlay">${item.title}</h3>
+              </div>
+              <div class="prod-content">
+                <div class="prod-meta">
+                  <div class="prod-avatar"></div>
+                  <div>
+                    <div style="font-weight: 600;">${item.author}</div>
+                    <div style="font-size: 14px; color: #666;">${item.date}</div>
+                  </div>
+                  <div style="margin-left: auto;">
+                    <div class="prod-badge">Featured</div>
+                  </div>
+                </div>
+                <p style="color: #555; line-height: 1.6; margin: 16px 0;">${item.longDescription}</p>
+                <div class="card-tags" style="margin: 16px 0;">
+                  ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                  <div class="prod-price">$${item.price}</div>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary">Buy Now</button>
+                    <button class="btn">Details</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        },
+
+        glassmorphism: (item) => {
+          // Glassmorphism effect - very heavy on backdrop-filter
+          return `
+            <div class="glass-card">
+              <div style="display: flex; gap: 20px;">
+                <img src="${item.imageUrl}" width="200" height="150" class="glass-image"/>
+                <div style="flex: 1;">
+                  <h3 style="color: white; font-size: 24px; margin: 0 0 12px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    ${item.title}
+                  </h3>
+                  <p style="color: rgba(255,255,255,0.9); line-height: 1.6; font-size: 14px;">
+                    ${item.longDescription}
+                  </p>
+                  <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${item.tags.map(tag =>
+                      `<span style="
+                        background: rgba(255,255,255,0.2);
+                        backdrop-filter: blur(5px);
+                        padding: 6px 12px;
+                        border-radius: 12px;
+                        font-size: 12px;
+                        color: white;
+                        border: 1px solid rgba(255,255,255,0.3);
+                      ">${tag}</span>`
+                    ).join('')}
+                  </div>
+                  <div style="margin-top: 20px; display: flex; gap: 12px;">
+                    <button class="glass-button">View Details</button>
+                    <button class="glass-button">Share</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      };
 
       if (!getOutlet('dalist')) {
-        qs('#listContent').innerHTML = FastList({
-          preloadSize: 1000,
-          estimateHeight(item) { return 50; },
+        const rendering = qs('#rendering').value;
+        const ListComponent = FastList;
+
+        qs('#listContent').innerHTML = ListComponent({
+          estimateHeight(item) {
+            const complexity = qs('#complexity').value;
+            const heights = {
+              simple: 50,
+              realistic: 250,
+              complex: 350,
+              extreme: 500,
+              insane: 800,
+              'shadow-dom': 600,
+              'nested-hell': 400,
+              production: 450,
+              glassmorphism: 220
+            };
+            return heights[complexity] || 50;
+          },
           render(item) {
-            //console.log(`Renderrr`);
-            return `
-              <div class="item">
-                <img src="${item.imageUrl}" width="200" height="150"/>
-                <div class="name">${item.name}</div>
-                <div class="desc">${item.description}</div>
-              </div>
-            `;
+            const complexity = qs('#complexity').value;
+            return renderFunctions[complexity](item);
           }
          }).outlet('dalist');
       }
