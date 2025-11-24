@@ -39,12 +39,6 @@
     .stat { font-size: 14px; color: #666; }
     .stat-value { font-weight: 600; color: #333; }
 
-    /* Complex card adds more elements */
-    .card-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
     .btn {
       padding: 6px 16px;
       border: 1px solid #ddd;
@@ -55,34 +49,6 @@
       font-weight: 500;
     }
     .btn-primary { background: #1976d2; color: white; border-color: #1976d2; }
-
-    .progress-bar {
-      height: 6px;
-      background: #f0f0f0;
-      border-radius: 3px;
-      overflow: hidden;
-      margin: 8px 0;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #4caf50, #8bc34a);
-      transition: width 0.3s;
-    }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .icon {
-      width: 20px;
-      height: 20px;
-      display: inline-block;
-      background: #ccc;
-      border-radius: 4px;
-    }
 
     /* Production-quality card with shadows and gradients */
     .prod-card {
@@ -208,6 +174,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="controls">
       <style> @scope {
@@ -217,13 +184,6 @@
           padding: 16px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       }</style>
-    <label>
-      Rendering:
-      <select id="rendering">
-        <option value="recreate">Destroy/Recreate (FastList)</option>
-        <option value="reuse">Element Reuse (FastListReuse)</option>
-      </select>
-    </label>
 
     <label>
       Item Count:
@@ -233,11 +193,11 @@
     <label>
       Complexity:
       <select id="complexity">
-        <option value="simple">Simple (current)</option>
+        <!--        <option value="simple">Simple (current)</option>-->
         <option value="realistic">Realistic Card</option>
-        <option value="complex">Complex Card</option>
-        <option value="extreme">Extreme</option>
-        <option value="insane">Insane</option>
+        <!--        <option value="complex">Complex Card</option>-->
+        <!--        <option value="extreme">Extreme</option>-->
+        <!--        <option value="insane">Insane</option>-->
         <option value="shadow-dom">Shadow DOM Stress</option>
         <option value="nested-hell">Deeply Nested</option>
         <option value="production">Production Card (shadows+gradients)</option>
@@ -265,414 +225,289 @@
     let currentApproach = null;
 
     // FPS tracking
-    let lastTime = performance.now();
-    let frames = 0;
-    let fps = 0;
+    {
+        let lastTime = performance.now();
+        let frames = 0;
+        let fps = 0;
 
-    function updateFPS() {
-      frames++;
-      const now = performance.now();
-      if (now - lastTime >= 1000) {
-        fps = Math.round(frames * 1000 / (now - lastTime));
-        document.getElementById('fps').textContent = `FPS: ${fps}`;
-        frames = 0;
-        lastTime = now;
-      }
-      requestAnimationFrame(updateFPS);
-    }
-    requestAnimationFrame(updateFPS);
-
-    // ===== MAIN CONTROLS =====
-    let currentList = null;
-
-    // Restore rendering mode from localStorage
-    const savedRendering = window.localStorage.getItem('rendering');
-    if (savedRendering) {
-      qs('#rendering').value = savedRendering;
-    }
-
-    // Save settings when they change
-    listen(qs('#rendering'), 'change', () => {
-      // Save and reload to recreate the list component
-      window.localStorage.setItem('rendering', qs('#rendering').value);
-      window.location.reload();
-    });
-
-    listen(qs('#itemCount'), 'input', () => {
-        console.log(`Saving itemCount: ${qs('#itemCount').value}`)
-        window.localStorage.setItem('itemCount', qs('#itemCount').value);
-    });
-
-    listen(qs('#complexity'), 'change', () => {
-      // Add/remove animated background for glassmorphism
-      const isGlass = qs('#complexity').value === 'glassmorphism';
-      let bg = qs('.glass-bg');
-      if (isGlass && !bg) {
-        bg = document.createElement('div');
-        bg.className = 'glass-bg';
-        document.body.appendChild(bg);
-      } else if (!isGlass && bg) {
-        bg.remove();
-      }
-
-      // Force re-render with new complexity
-      if (getOutlet('dalist')) {
-        const currentItems = getOutlet('dalist').items;
-        getOutlet('dalist').items = [...currentItems];
-      }
-    });
-
-    listen(qs('#renderBtn'), 'click', () => {
-
-      console.log(`renderBtn click`);
-
-      // Generate test data
-      function generateItems(count) {
-        const items = [];
-        for (let i = 0; i < count; i++) {
-          items.push({
-            id: i,
-            name: `Item ${i}`,
-            title: `Amazing Product ${i}`,
-            description: `Description for item ${i}`,
-            longDescription: `This is a much longer description for item ${i}. It contains multiple sentences and provides more detail about the product or content. It helps simulate realistic content that users might encounter in a real application.`,
-            imageUrl: `https://picsum.photos/seed/${i}/200/150`,
-            author: `Author ${i % 20}`,
-            date: new Date(Date.now() - Math.random() * 10000000000).toLocaleDateString(),
-            likes: Math.floor(Math.random() * 1000),
-            comments: Math.floor(Math.random() * 100),
-            views: Math.floor(Math.random() * 10000),
-            tags: ['JavaScript', 'Performance', 'WebDev'].slice(0, (i % 3) + 1),
-            progress: Math.floor(Math.random() * 100),
-            price: (Math.random() * 100).toFixed(2),
-            rating: (Math.random() * 2 + 3).toFixed(1)
-          });
+        function updateFPS() {
+            frames++;
+            const now = performance.now();
+            if (now - lastTime >= 1000) {
+                fps = Math.round(frames * 1000 / (now - lastTime));
+                document.getElementById('fps').textContent = `FPS: ${fps}`;
+                frames = 0;
+                lastTime = now;
+            }
+            requestAnimationFrame(updateFPS);
         }
-        return items;
-      }
 
-      const renderFunctions = {
-        simple: (item) => `
-          <div class="item">
-            <img src="${item.imageUrl}" width="200" height="150"/>
-            <div class="name">${item.name}</div>
-            <div class="desc">${item.description}</div>
-          </div>
-        `,
+        requestAnimationFrame(updateFPS);
+    }
 
-        realistic: (item) => `
-          <div class="card">
-            <img src="${item.imageUrl}" width="200" height="150"/>
-            <div class="card-content">
-              <div class="card-header">
-                <h3 class="card-title">${item.title}</h3>
-                <span class="card-meta">${item.date}</span>
-              </div>
-              <div class="card-description">${item.longDescription}</div>
-              <div class="card-tags">
-                ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-              </div>
-              <div class="card-stats">
-                <span class="stat"><span class="stat-value">${item.likes}</span> likes</span>
-                <span class="stat"><span class="stat-value">${item.comments}</span> comments</span>
-                <span class="stat"><span class="stat-value">${item.views}</span> views</span>
-              </div>
-            </div>
-          </div>
-        `,
+    // Init/restore state
+    {
+        // Init controls state
+        {
+            qs('#itemCount').value  = window.localStorage.getItem('itemCount') ?? 10;
+            qs('#complexity').value = window.localStorage.getItem('complexity') ?? qs('#complexity').value;
+        }
+    }
 
-        complex: (item) => `
-          <div class="card">
-            <img src="${item.imageUrl}" width="200" height="150"/>
-            <div class="card-content">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title">${item.title}</h3>
-                  <span class="card-meta">By ${item.author} • ${item.date}</span>
-                </div>
-                <div class="avatar"></div>
-              </div>
-              <div class="card-description">${item.longDescription}</div>
-              <div class="card-tags">
-                ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${item.progress}%"></div>
-              </div>
-              <div class="card-stats">
-                <span class="stat"><span class="icon"></span> <span class="stat-value">${item.likes}</span> likes</span>
-                <span class="stat"><span class="icon"></span> <span class="stat-value">${item.comments}</span> comments</span>
-                <span class="stat"><span class="icon"></span> <span class="stat-value">${item.views}</span> views</span>
-                <span class="stat"><span class="icon"></span> <span class="stat-value">★${item.rating}</span></span>
-              </div>
-              <div class="card-actions">
-                <button class="btn btn-primary">View Details</button>
-                <button class="btn">Share</button>
-                <button class="btn">Save</button>
-              </div>
-            </div>
-          </div>
-        `,
+    // Save state
+    {
+        // Save controls state
+        listen(qs('#itemCount'), 'input',   () => { window.localStorage.setItem('itemCount',  qs('#itemCount').value) });
+        listen(qs('#complexity'), 'change', () => { window.localStorage.setItem('complexity', qs('#complexity').value) });
 
-        extreme: (item) => {
-          // 3x more elements than complex
-          const extraElements = Array(10).fill(0).map((_, i) =>
-            `<div class="stat"><span class="icon"></span> Extra ${i}</div>`
-          ).join('');
-          return `
-            <div class="card">
-              <img src="${item.imageUrl}" width="200" height="150"/>
-              <div class="card-content">
-                <div class="card-header">
-                  <div>
+        // Save scroll position
+
+        setTimeout(() => {
+            listen(qs('.FastList_listContainer'), 'scroll', (x) => {
+                window.localStorage.setItem('scrollTop', qs('.FastList_listContainer').scrollTop)
+            });
+        }, 0); // Wait until the FastList was created.
+    }
+
+    // React to complexity change.
+    function reactToComplexityChange() {
+        console.log(`Complexity change to ${qs('#complexity').value}`);
+        renderStuff();
+    }
+    listen(qs('#complexity'), 'change', () => { reactToComplexityChange() });
+    //reactToComplexityChange(); // TODO: Upgrade observe/listen primitive (or figure out a pattern using the existing primitives) to allow syncing with <select> changes in a one-liner. (Not needed in this case, but generally useful)
+
+    // React to renderBtn
+    listen(qs('#renderBtn'), 'click', () => { renderStuff() })
+    renderStuff();
+
+    // Define rendering function
+    function renderStuff() {
+
+        // Init FastList()
+        {
+
+            if (!getOutlet('dalist')) {
+                qs('.whereDaFastListGoes').innerHTML = FastList({
+                    estimateHeight(item) {
+                        const complexity = qs('#complexity').value;
+                        const heights = {
+                            'realistic': 250,
+                            'shadow-dom': 600,
+                            'nested-hell': 400,
+                            'production': 450,
+                            'glassmorphism': 220
+                        };
+                        return heights[complexity] || 50;
+                    },
+                    render(item) {
+                        const complexity = qs('#complexity').value;
+                        return renderFunctions[complexity](item);
+                    }
+                }).outlet('dalist');
+            }
+        }
+        // Add/remove animated background for glassmorphism
+        {
+            const isGlass = qs('#complexity').value === 'glassmorphism';
+            let bg = qs('.glass-bg');
+            if (isGlass && !bg) {
+                if (1) {
+                    bg = document.createElement('div');
+                    bg.className = 'glass-bg';
+                    document.body.appendChild(bg);
+                } else { // TODO: This causes everything to break and weird things that I don't understand to happen in mini-framework.js > connectedCallback()
+                    document.body.innerHTML += `
+                        <div class="glass-bg"></div>
+                    `
+                }
+
+            } else if (!isGlass && bg) {
+                bg.remove();
+            }
+        }
+
+        // Render the list
+        setTimeout(() =>
+        {
+            // Benchmark
+            const startTime = performance.now();
+
+            // Generate items and reload FastList()
+            getOutlet('dalist').items = generateItems(parseInt(qs('#itemCount').value));
+
+            // Restore saved scroll position
+            setTimeout(() => {
+                let savedScrollTop = window.localStorage.getItem('scrollTop');
+                console.log(`Restoring scroll position: ${savedScrollTop} (current scrollTop: ${qs('.FastList_listContainer').scrollTop})`);
+                qs('.FastList_listContainer').scrollTop = savedScrollTop
+                console.log(`Restoring scroll position: new scrollTop: ${qs('.FastList_listContainer').scrollTop})`);
+            }, 50); // (I don't know why this delay is necessary.)
+
+            ///Benchmark
+            qs('#renderTime').textContent = `Render time: ${Math.round(performance.now() - startTime)}ms`;
+        }, 50); // (I don't know why this delay is necessary.)
+
+        // Helper functions for list rendering
+        {
+            var generateItems = function (count) {
+                const items = [];
+                for (let i = 0; i < count; i++) {
+                    items.push({
+                        id: i,
+                        name: `Item ${i}`,
+                        title: `Amazing Product ${i}`,
+                        description: `Description for item ${i}`,
+                        longDescription: `This is a much longer description for item ${i}. It contains multiple sentences and provides more detail about the product or content. It helps simulate realistic content that users might encounter in a real application.`,
+                        imageUrl: `https://picsum.photos/seed/${i}/200/150`,
+                        author: `Author ${i % 20}`,
+                        date: new Date(Date.now() - Math.random() * 10000000000).toLocaleDateString(),
+                        likes: Math.floor(Math.random() * 1000),
+                        comments: Math.floor(Math.random() * 100),
+                        views: Math.floor(Math.random() * 10000),
+                        tags: ['JavaScript', 'Performance', 'WebDev'].slice(0, (i % 3) + 1),
+                        progress: Math.floor(Math.random() * 100),
+                        price: (Math.random() * 100).toFixed(2),
+                        rating: (Math.random() * 2 + 3).toFixed(1)
+                    });
+                }
+                return items;
+            }
+
+            var renderFunctions = {
+
+                'realistic': (item) => `
+              <div class="card">
+                <img src="${item.imageUrl}" width="200" height="150"/>
+                <div class="card-content">
+                  <div class="card-header">
                     <h3 class="card-title">${item.title}</h3>
-                    <span class="card-meta">By ${item.author} • ${item.date}</span>
+                    <span class="card-meta">${item.date}</span>
                   </div>
-                  <div class="avatar"></div>
-                </div>
-                <div class="card-description">${item.longDescription}</div>
-                <div class="card-description">${item.longDescription}</div>
-                <div class="card-tags">
-                  ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                  ${item.tags.map(tag => `<span class="tag">${tag} Pro</span>`).join('')}
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: ${item.progress}%"></div>
-                </div>
-                <div class="card-stats">
-                  <span class="stat"><span class="icon"></span> <span class="stat-value">${item.likes}</span> likes</span>
-                  <span class="stat"><span class="icon"></span> <span class="stat-value">${item.comments}</span> comments</span>
-                  <span class="stat"><span class="icon"></span> <span class="stat-value">${item.views}</span> views</span>
-                  <span class="stat"><span class="icon"></span> <span class="stat-value">★${item.rating}</span></span>
-                  ${extraElements}
-                </div>
-                <div class="card-actions">
-                  <button class="btn btn-primary">View Details</button>
-                  <button class="btn">Share</button>
-                  <button class="btn">Save</button>
-                  <button class="btn">Download</button>
-                  <button class="btn">Report</button>
-                </div>
-              </div>
-            </div>
-          `;
-        },
-
-        insane: (item) => {
-          // 10x more elements - really pushing it
-          const massiveElements = Array(50).fill(0).map((_, i) =>
-            `<div class="stat" style="padding: 4px;">
-              <span class="icon"></span>
-              <span style="font-size: 12px;">Metric ${i}: ${Math.random().toFixed(2)}</span>
-            </div>`
-          ).join('');
-          const manyButtons = Array(15).fill(0).map((_, i) =>
-            `<button class="btn">Action ${i}</button>`
-          ).join('');
-          return `
-            <div class="card">
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                <img src="${item.imageUrl}" width="100%" height="100"/>
-                <img src="${item.imageUrl}" width="100%" height="100"/>
-                <img src="${item.imageUrl}" width="100%" height="100"/>
-              </div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div>
-                    <h3 class="card-title">${item.title}</h3>
-                    <span class="card-meta">By ${item.author} • ${item.date}</span>
+                  <div class="card-description">${item.longDescription}</div>
+                  <div class="card-tags">
+                    ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                   </div>
-                  <div style="display: flex; gap: 4px;">
-                    <div class="avatar"></div>
-                    <div class="avatar"></div>
-                    <div class="avatar"></div>
-                  </div>
-                </div>
-                <div class="card-description">${item.longDescription}</div>
-                <div class="card-description">${item.longDescription}</div>
-                <div class="card-description">${item.longDescription}</div>
-                <div class="card-tags">
-                  ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                  ${item.tags.map(tag => `<span class="tag">${tag} Pro</span>`).join('')}
-                  ${item.tags.map(tag => `<span class="tag">${tag} Plus</span>`).join('')}
-                  ${item.tags.map(tag => `<span class="tag">${tag} Premium</span>`).join('')}
-                </div>
-                <div class="progress-bar"><div class="progress-fill" style="width: ${item.progress}%"></div></div>
-                <div class="progress-bar"><div class="progress-fill" style="width: ${100 - item.progress}%"></div></div>
-                <div class="progress-bar"><div class="progress-fill" style="width: ${item.progress / 2}%"></div></div>
-                <div class="card-stats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                  ${massiveElements}
-                </div>
-                <div class="card-actions" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;">
-                  ${manyButtons}
-                </div>
-              </div>
-            </div>
-          `;
-        },
-
-        'shadow-dom': (item) => {
-          // Test with lots of CSS custom properties and filters
-          const heavyStyles = Array(20).fill(0).map((_, i) =>
-            `<div style="
-              filter: blur(0.${i}px) brightness(1.${i});
-              transform: translateZ(0) rotate(${i}deg);
-              backdrop-filter: blur(${i}px);
-              box-shadow: 0 ${i}px ${i*2}px rgba(0,0,0,0.1);
-              background: linear-gradient(${i*10}deg, rgba(${i*10},${i*5},${i*15},0.1), rgba(${i*5},${i*10},${i*20},0.2));
-            " class="stat">Heavy Style ${i}</div>`
-          ).join('');
-          return `
-            <div class="card" style="will-change: transform; contain: layout style paint;">
-              ${heavyStyles}
-            </div>
-          `;
-        },
-
-        'nested-hell': (item) => {
-          // Create deeply nested DOM structure
-          let nested = '<div class="card"><div class="card-content">';
-          for (let i = 0; i < 50; i++) {
-            nested += `<div style="padding: 1px; border: 1px solid rgba(0,0,0,0.05);">
-              <span style="font-size: ${14 - (i % 5)}px;">Level ${i}</span>`;
-          }
-          nested += `<div style="padding: 20px; background: #f5f5f5;">
-            <img src="${item.imageUrl}" width="200" height="150"/>
-            <h3>${item.title}</h3>
-            <p>${item.longDescription}</p>
-          </div>`;
-          for (let i = 0; i < 50; i++) {
-            nested += '</div>';
-          }
-          nested += '</div></div>';
-          return nested;
-        },
-
-        production: (item) => {
-          // Realistic production card with multiple box-shadows, gradients, and rounded corners
-          return `
-            <div class="prod-card">
-              <div class="prod-image-wrapper">
-                <img src="${item.imageUrl}" alt="${item.title}"/>
-                <div class="prod-gradient-overlay"></div>
-                <h3 class="prod-card-title-overlay">${item.title}</h3>
-              </div>
-              <div class="prod-content">
-                <div class="prod-meta">
-                  <div class="prod-avatar"></div>
-                  <div>
-                    <div style="font-weight: 600;">${item.author}</div>
-                    <div style="font-size: 14px; color: #666;">${item.date}</div>
-                  </div>
-                  <div style="margin-left: auto;">
-                    <div class="prod-badge">Featured</div>
-                  </div>
-                </div>
-                <p style="color: #555; line-height: 1.6; margin: 16px 0;">${item.longDescription}</p>
-                <div class="card-tags" style="margin: 16px 0;">
-                  ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                  <div class="prod-price">$${item.price}</div>
-                  <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-primary">Buy Now</button>
-                    <button class="btn">Details</button>
+                  <div class="card-stats">
+                    <span class="stat"><span class="stat-value">${item.likes}</span> likes</span>
+                    <span class="stat"><span class="stat-value">${item.comments}</span> comments</span>
+                    <span class="stat"><span class="stat-value">${item.views}</span> views</span>
                   </div>
                 </div>
               </div>
-            </div>
-          `;
-        },
+            `,
 
-        glassmorphism: (item) => {
-          // Glassmorphism effect - very heavy on backdrop-filter
-          return `
-            <div class="glass-card">
-              <div style="display: flex; gap: 20px;">
-                <img src="${item.imageUrl}" width="200" height="150" class="glass-image"/>
-                <div style="flex: 1;">
-                  <h3 style="color: white; font-size: 24px; margin: 0 0 12px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                    ${item.title}
-                  </h3>
-                  <p style="color: rgba(255,255,255,0.9); line-height: 1.6; font-size: 14px;">
-                    ${item.longDescription}
-                  </p>
-                  <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
-                    ${item.tags.map(tag =>
-                      `<span style="
-                        background: rgba(255,255,255,0.2);
-                        backdrop-filter: blur(5px);
-                        padding: 6px 12px;
-                        border-radius: 12px;
-                        font-size: 12px;
-                        color: white;
-                        border: 1px solid rgba(255,255,255,0.3);
-                      ">${tag}</span>`
+                'shadow-dom': (item) => {
+                    // Test with lots of CSS custom properties and filters
+                    const heavyStyles = Array(20).fill(0).map((_, i) =>
+                        `<div style="
+                  filter: blur(0.${i}px) brightness(1.${i});
+                  transform: translateZ(0) rotate(${i}deg);
+                  backdrop-filter: blur(${i}px);
+                  box-shadow: 0 ${i}px ${i * 2}px rgba(0,0,0,0.1);
+                  background: linear-gradient(${i * 10}deg, rgba(${i * 10},${i * 5},${i * 15},0.1), rgba(${i * 5},${i * 10},${i * 20},0.2));
+                " class="stat">Heavy Style ${i}</div>`
+                    ).join('');
+                    return `
+                <div class="card" style="will-change: transform; contain: layout style paint;">
+                  ${heavyStyles}
+                </div>
+              `;
+                },
+
+                'nested-hell': (item) => {
+                    // Create deeply nested DOM structure
+                    let nested = '<div class="card"><div class="card-content">';
+                    for (let i = 0; i < 50; i++) {
+                        nested += `<div style="padding: 1px; border: 1px solid rgba(0,0,0,0.05);">
+                  <span style="font-size: ${14 - (i % 5)}px;">Level ${i}</span>`;
+                    }
+                    nested += `<div style="padding: 20px; background: #f5f5f5;">
+                <img src="${item.imageUrl}" width="200" height="150"/>
+                <h3>${item.title}</h3>
+                <p>${item.longDescription}</p>
+              </div>`;
+                    for (let i = 0; i < 50; i++) {
+                        nested += '</div>';
+                    }
+                    nested += '</div></div>';
+                    return nested;
+                },
+
+                'production': (item) => {
+                    // Realistic production card with multiple box-shadows, gradients, and rounded corners
+                    return `
+                <div class="prod-card">
+                  <div class="prod-image-wrapper">
+                    <img src="${item.imageUrl}" alt="${item.title}"/>
+                    <div class="prod-gradient-overlay"></div>
+                    <h3 class="prod-card-title-overlay">${item.title}</h3>
+                  </div>
+                  <div class="prod-content">
+                    <div class="prod-meta">
+                      <div class="prod-avatar"></div>
+                      <div>
+                        <div style="font-weight: 600;">${item.author}</div>
+                        <div style="font-size: 14px; color: #666;">${item.date}</div>
+                      </div>
+                      <div style="margin-left: auto;">
+                        <div class="prod-badge">Featured</div>
+                      </div>
+                    </div>
+                    <p style="color: #555; line-height: 1.6; margin: 16px 0;">${item.longDescription}</p>
+                    <div class="card-tags" style="margin: 16px 0;">
+                      ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                      <div class="prod-price">$${item.price}</div>
+                      <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary">Buy Now</button>
+                        <button class="btn">Details</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+                },
+
+                'glassmorphism': (item) => {
+                    // Glassmorphism effect - very heavy on backdrop-filter
+                    return `
+                <div class="glass-card">
+                  <div style="display: flex; gap: 20px;">
+                    <img src="${item.imageUrl}" width="200" height="150" class="glass-image"/>
+                    <div style="flex: 1;">
+                      <h3 style="color: white; font-size: 24px; margin: 0 0 12px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                        ${item.title}
+                      </h3>
+                      <p style="color: rgba(255,255,255,0.9); line-height: 1.6; font-size: 14px;">
+                        ${item.longDescription}
+                      </p>
+                      <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        ${item.tags.map(tag =>
+                        `<span style="
+                            background: rgba(255,255,255,0.2);
+                            backdrop-filter: blur(5px);
+                            padding: 6px 12px;
+                            border-radius: 12px;
+                            font-size: 12px;
+                            color: white;
+                            border: 1px solid rgba(255,255,255,0.3);
+                          ">${tag}</span>`
                     ).join('')}
-                  </div>
-                  <div style="margin-top: 20px; display: flex; gap: 12px;">
-                    <button class="glass-button">View Details</button>
-                    <button class="glass-button">Share</button>
+                      </div>
+                      <div style="margin-top: 20px; display: flex; gap: 12px;">
+                        <button class="glass-button">View Details</button>
+                        <button class="glass-button">Share</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          `;
-        }
-      };
-
-      if (!getOutlet('dalist')) {
-        const rendering = qs('#rendering').value;
-
-        qs('.whereDaFastListGoes').innerHTML = FastList({
-          estimateHeight(item) {
-            const complexity = qs('#complexity').value;
-            const heights = {
-              simple: 50,
-              realistic: 250,
-              complex: 350,
-              extreme: 500,
-              insane: 800,
-              'shadow-dom': 600,
-              'nested-hell': 400,
-              production: 450,
-              glassmorphism: 220
+              `;
+                }
             };
-            return heights[complexity] || 50;
-          },
-          render(item) {
-            const complexity = qs('#complexity').value;
-            return renderFunctions[complexity](item);
-          }
-         }).outlet('dalist');
-      }
-
-      qs('#itemCount').value = window.localStorage.getItem('itemCount') ?? 10;
-
-      let scrollContainer = qs('.FastList_listContainer');
-
-      setTimeout(() => {
-          const startTime = performance.now();
-
-          getOutlet('dalist').items = generateItems(parseInt(qs('#itemCount').value));
-
-          let savedScrollTop = window.localStorage.getItem('scrollTop');
-          console.log(`Restoring scroll position: ${savedScrollTop}`);
-          scrollContainer.scrollTop = savedScrollTop
-
-          qs('#renderTime').textContent = `Render time: ${Math.round(performance.now() - startTime)}ms`;
-      }, 0);
-
-
-      // Save state on scroll
-      scrollContainer.addEventListener('scroll', (x) => {
-          //console.log(`Saving scrollTop: ${scrollContainer.scrollTop}`)
-          window.localStorage.setItem('scrollTop', scrollContainer.scrollTop)
-      },
-      { passive: true });
-    });
-
-    qs('#renderBtn').click();
+        }
+    }
 
   </script>
 </body>

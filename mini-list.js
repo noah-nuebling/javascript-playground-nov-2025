@@ -2,7 +2,7 @@ import { dedent } from './utils.js'
 import { observe, wrapInCustomElement, listen, debounce, qs } from "./mini-framework.js"
 
 /**
-    Performance test result for FastList(): [Nov 2025]
+    - Performance test result for FastList(): [Nov 2025]
         - Runs buttery smooth even with 1'000'000 complex items on my M1 MBA in Google Chrome.
         - There are two optimizations:
             1. For large number of items (50+)
@@ -17,6 +17,10 @@ import { observe, wrapInCustomElement, listen, debounce, qs } from "./mini-frame
                             You can have 1'000'000 super expensive-to-draw items, and it's rock solid 60 fps on my M1 MBA.
                     -> I think the HTML rendering is not the bottleneck but that this optimization helps the browser cache the painting better or something. (But not sure.)
         - We're not doing full element-recycling like NSTableView, I don't think that's a bottleneck here.
+        - TODO: `SimpleList()`.
+            The FastList() is overengineered for most usecases. Having a SimpleList((item) => <HTMLString>) interface
+                which simply concatenates the HTML of each element together would be more simple and flexible, and understandable.
+                (It would be more 'flexible' since it would support flexbox and grid, instead of only manually calculated vertical layout.)
 */
 
 export const FastList = ({
@@ -31,13 +35,12 @@ export const FastList = ({
         <div class="FastList_listContainer">
           <style> @scope {
               :scope {
-                  height: 100vh;
+                  height: 100vh; /*TODO: Breaks without this – this should be controllable by the user instead. */
                   overflow: auto;
                   position: relative;
               }
               .listContent {
                   display: block flow;
-                  grid-template-columns: repeat(1, 1fr);
               }
           }</style>
         <div class="FastList_listContent"></div>
@@ -53,7 +56,7 @@ export const FastList = ({
             let listContainer   = qs(this, ".FastList_listContainer");
             let itemContainer   = listContent;
 
-            let itemHeightCache = {} // Small problem: Scroll pos is not preserved after a page reload because we loose the itemHeightCache. [Nov 2025]
+            let itemHeightCache = {} // TODO: Scroll pos is not preserved after a page reload because we loose the itemHeightCache. [Nov 2025]
             let visibleElementTracker = {}; // 'visible' items aren't necessarily visible if the preloadSize > 0. It just means they're rendered HTML strings are attached to the DOM.
 
             let renderItems;

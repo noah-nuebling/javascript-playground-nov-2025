@@ -6,6 +6,13 @@ export const qs = (...args) => {
 };
 export const listen = function (obj, eventname, callback) { obj.addEventListener(eventname, callback) }
 
+let debounceTimers = {}
+export const debounce = (id, delay, fn) => {
+    clearTimeout(debounceTimers[id]);
+    debounceTimers[id] = setTimeout(fn, delay);
+};
+
+
  /* outlet() is meant for components since you can't define ids/classes on the <mf-component> root node directly from the outside.
     Usage: 
         - Give the component an identifier in your declarative UI:
@@ -25,12 +32,6 @@ export const getOutlet = (...args) => {
     else                  return qs(document, `.outlet.${args[0]} > *`);
 }
 
-let debounceTimers = {}
-export const debounce = (id, delay, fn) => {
-    clearTimeout(debounceTimers[id]);
-    debounceTimers[id] = setTimeout(fn, delay);
-};
-
 const connectedCallbacksProvidedByUser = {};
 let instanceCounter = 0;
 
@@ -49,6 +50,7 @@ export function wrapInCustomElement(innerHtml, { connected, dbgname }) {
                 pendingConnectedCallbacks.push(this); // Call connectedCallback() in reverse order per each runLoop iteration, so that child-components are initialized before their parents. () [Nov 2025]
                 debounce("connectedCallback", 0, () => {
                     for (let this_ of pendingConnectedCallbacks.toReversed()) {
+                        //if (!connectedCallbacksProvidedByUser[this.dataset.instanceid]) continue;
                         connectedCallbacksProvidedByUser[this_.dataset.instanceid].call(this_);
                         delete connectedCallbacksProvidedByUser[this_.dataset.instanceid];
                     }
