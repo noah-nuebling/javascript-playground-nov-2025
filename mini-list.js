@@ -12,7 +12,7 @@ import { observe, wrapInCustomElement, listen, debounce, qs } from "./mini-frame
                 -> This is only noticable for extreme cases on my M1 MBA in Chrome. And I could only get it to be noticable when rows had expensive CSS effects, not just from their HTML being complex.
                     The effect I observed is that rows load in a bit faster, instead of loading their content in a split second after appearing on-screen when scrolling fast.
                         There were no frame-drops either way.
-                    Just re-rendering all visible items from scratch is more than fast enough for almost all cases.
+                    Just re-rendering all visible items from scratch on each scroll-event is more than fast enough for almost all cases.
                         But with this optimization it's fast enough *no matter what you throw at it*.
                             You can have 1'000'000 super expensive-to-draw items, and it's rock solid 60 fps on my M1 MBA.
                     -> I think the HTML rendering is not the bottleneck but that this optimization helps the browser cache the painting better or something. (But not sure.)
@@ -24,8 +24,8 @@ import { observe, wrapInCustomElement, listen, debounce, qs } from "./mini-frame
 */
 
 export const FastList = ({
-    estimateHeight,                 // Returns the estimated height for a given item which has not been rendered, yet. To the website-visitor, the only effect is that this determines the size and position of the scroll-bar before the items are rendered (and the estimated height is replaced with the measured height).
-    preloadSize = 1000,             // How much beyond the viewport bounds items are rendered. Can help UX by making sure images are already loaded once elements are scrolled onto the screen.
+    estimateHeight,                 // Returns the estimated height for a given item which has not been rendered, yet. To the website-visitor, the only noticable thing this does is to determine the size and position of the scroll-bar when initially loading the page. (When the page is scrolled and more items are rendered, the estimated heights will be replaced with the real measured heights, and the scrollbar will update)
+    preloadSize = 1000,    // How much beyond the viewport bounds items are rendered. Can help UX by making sure images are already loaded once elements are scrolled onto the screen.
     render                          // Returns the HTML string for a given item.
 }) => {
 
@@ -80,7 +80,7 @@ export const FastList = ({
                     let newListWidth = listContent.offsetWidth;
                     console.debug(`listWidth/newListWidth: ${[listWidth, newListWidth]}`)
                     if (listWidth !== -1 && listWidth !== newListWidth) {
-                        _reloadItems(); // Maybe we could only reset `itemHeightCache` for optimization [Nov 2025]
+                        _reloadItems(); // TODO: Maybe we could only reset `itemHeightCache` for optimization [Nov 2025]
                     }
                     listWidth = newListWidth;
 
@@ -105,7 +105,7 @@ export const FastList = ({
                     let _this_items_length       = this.items.length;
                     let _this_items                       = this.items;
                     for (; i < _this_items_length; i++) {
-                        if (itemHeightCache[i] === undefined) itemHeightCache[i] = estimateHeight(_this_items[i]);
+                        if (itemHeightCache[i] === undefined) itemHeightCache[i] = estimateHeight(_this_items[i]); /// Weird/bad: We break; *after* this so that the heightShift code below can access the estimateHeight() through the itemHeightCache[i]. I don't remember why we did that. [Nov 2025]
                         let itemHeight = itemHeightCache[i];
                         if (accumulatedHeight + itemHeight >= (_listContainer_scrollTop - preloadSize)) { break; }
                         accumulatedHeight += itemHeight;

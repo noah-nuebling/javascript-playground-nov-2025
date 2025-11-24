@@ -283,7 +283,7 @@ function error_wrapInCustomElement_footgun1(this_) {
 
     import { dedent } from "./utils.js"; // TODO: Organize these internal helpers.
     let debounceTimers = {}
-    export const debounce = (id, delay, fn) => {
-        clearTimeout(debounceTimers[id]);
-        debounceTimers[id] = setTimeout(fn, delay);
+    export const debounce = (key, delay, fn) => {
+        clearTimeout(debounceTimers[key]);
+        debounceTimers[key] = setTimeout(fn, delay);
     };
