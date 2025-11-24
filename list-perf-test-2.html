@@ -268,13 +268,10 @@
     }
 
     // React to complexity change.
-    function reactToComplexityChange() {
-        console.log(`Complexity change to ${qs('#complexity').value}`);
-        renderStuff();
-    }
-    listen(qs('#complexity'), 'change', () => { reactToComplexityChange() });
-    //reactToComplexityChange(); // TODO: Upgrade observe/listen primitive (or figure out a pattern using the existing primitives) to allow syncing with <select> changes in a one-liner. (Not needed in this case, but generally useful)
-
+    observe(qs('#complexity'), 'value', (newComplexity) => { 
+      renderStuff();
+    }, false);
+    
     // React to renderBtn
     listen(qs('#renderBtn'), 'click', () => { renderStuff() })
     renderStuff();

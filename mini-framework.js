@@ -65,20 +65,43 @@ export function wrapInCustomElement(innerHtml, { connected, dbgname }) {
 
 export const observe = function (obj, prop, callback, triggerImmediately = true) {
 
-    if (!obj[`__mf-observers_${prop}__`]) { // First time observing this property
-        obj[`__mf-observers_${prop}__`] = [];
+    if (
+        prop === 'value' && 
+        (
+            obj instanceof HTMLInputElement ||
+            obj instanceof HTMLSelectElement ||
+            obj instanceof HTMLTextAreaElement
+        )
+    ) {
+        // Special case: 
+        // Use addEventListener for .value on `<input>, <select>, and <textarea>` elements, because it can't be observed using Object.defineProperty(). (It seems, [Nov 2025])
+        //     Discussion: This is a bit ugly / abstracted - not sure if in spirit of mini-framework.js
+        //      - Might be better to add a 'triggerImmediately' option to listen()?
+        //      - Or maybe we could simplify observe() by using a Proxy-based observer instead of Object.defineProperty()?
 
-        let value = obj[prop];
-        Object.defineProperty(obj, prop, {
-            get: () => value,
-            set: (newVal) => {
-                value = newVal;
-                obj[`__mf-observers_${prop}__`].forEach(cb => cb(newVal));
-            },
-        });
+        obj.addEventListener('change', () => { callback(obj.value) });
     }
+    else {
 
-    obj[`__mf-observers_${prop}__`].push(callback);
+        // Default case: 
+        // Use Object.defineProperty() to set up an observation
+
+        if (!obj[`__mf-observers_${prop}__`]) { // First time observing this property
+            obj[`__mf-observers_${prop}__`] = [];
+
+            let value = obj[prop];
+            
+            Object.defineProperty(obj, prop, {
+                get: () => value,
+                set: (newVal) => {
+                    value = newVal;
+                    obj[`__mf-observers_${prop}__`].forEach(cb => cb(newVal));
+                },
+            });
+        }
+
+        obj[`__mf-observers_${prop}__`].push(callback);
+    }
 
     if (triggerImmediately) callback(obj[prop]);
 }
