@@ -310,14 +310,15 @@
                 const isGlass = qs('#complexity').value === 'glassmorphism';
                 let bg = qs('.glass-bg');
                 if (isGlass && !bg) {
-                    if (1) {
+                    if (0) {
                         bg = document.createElement('div');
                         bg.className = 'glass-bg';
                         document.body.appendChild(bg);
-                    } else { // TODO: This causes everything to break and weird things that I don't understand to happen in mini-framework.js > connectedCallback()
-                        document.body.innerHTML += `
+                    } else {
+                        console.log(`Add glass-bg`)
+                        document.body.insertAdjacentHTML('beforeend', `
                             <div class="glass-bg"></div>
-                        `
+                        `);
                     }
 
                 } else if (!isGlass && bg) {
