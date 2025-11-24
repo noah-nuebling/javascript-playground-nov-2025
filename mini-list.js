@@ -72,7 +72,7 @@ export const FastList = ({
 
                 observe(this, 'items', () => {
                     _reloadItems();
-                })
+                }, true)
 
                 let listWidth = -1;
                 let resizeObserver = new ResizeObserver((entries) => {

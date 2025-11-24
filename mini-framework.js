@@ -4,7 +4,6 @@ export const qs = (...args) => {
     if (args.length >= 2) return args[0].querySelector(args[1]);
     else                 return document.querySelector(args[0]);
 };
-export const listen = function (obj, eventname, callback) { obj.addEventListener(eventname, callback) }
 
 let debounceTimers = {}
 export const debounce = (id, delay, fn) => {
@@ -63,50 +62,74 @@ export function wrapInCustomElement(innerHtml, { connected, dbgname }) {
     return `<mf-component data-dbgname="${dbgname}" data-instanceid="${instanceid}" style="display: contents">${innerHtml}</mf-component>`;
 }
 
-export const observe = function (obj, prop, callback, triggerImmediately = true) {
 
-    if (
-        prop === 'value' && 
-        (
-            obj instanceof HTMLInputElement ||
-            obj instanceof HTMLSelectElement ||
-            obj instanceof HTMLTextAreaElement
-        )
-    ) {
-        // Special case: 
-        // Use addEventListener for .value on `<input>, <select>, and <textarea>` elements, because it can't be observed using Object.defineProperty(). (It seems, [Nov 2025])
-        //     Discussion: This is a bit ugly / abstracted - not sure if in spirit of mini-framework.js
-        //      - Might be better to add a 'triggerImmediately' option to listen()?
-        //      - Or maybe we could simplify observe() by using a Proxy-based observer instead of Object.defineProperty()?
+// Primitives for UI <-> model syncing
 
-        obj.addEventListener('change', () => { callback(obj.value) });
+    export const listen = function (obj, eventname, callback, triggerImmediately) { 
+        obj.addEventListener(eventname, () => callback())
+        if (triggerImmediately) callback();
     }
-    else {
 
-        // Default case: 
-        // Use Object.defineProperty() to set up an observation
+    export const observe = function (obj, prop, callback, triggerImmediately) {
 
         if (!obj[`__mf-observers_${prop}__`]) { // First time observing this property
             obj[`__mf-observers_${prop}__`] = [];
 
-            let value = obj[prop];
-            
-            Object.defineProperty(obj, prop, {
-                get: () => value,
-                set: (newVal) => {
-                    value = newVal;
-                    obj[`__mf-observers_${prop}__`].forEach(cb => cb(newVal));
-                },
-            });
+            // Catch (possibly?) common footgun of trying to observe a computed property, like `HTMLSelectElement.value`
+            {   
+                // Look up the propertyDescriptor of obj.prop
+                let desc;
+                for (let o = obj; o; o = Object.getPrototypeOf(o)) {
+                    if (Object.getOwnPropertyDescriptor(o, prop)) { 
+                        desc = Object.getOwnPropertyDescriptor(o, prop); 
+                        break; 
+                    }
+                }
+
+                // Check if there's already a getter/setter for obj.prop
+                if (desc && (desc.get || desc.set)) { // Not sure if this should be an Error or a Warning. I think we might be breaking things by overriding existing setters without calling the original setter from the override??
+                    console.warn(`observe():\nProperty '${prop}' on object '${obj}' already has a getter/setter and may not be observable.\n\nFor HTMLElements, you may have to listen() for 'input', 'change', etc. instead of observing properties such as 'value' directly.`);
+                }
+            }
+
+            // Install the observation
+            {
+                let value = obj[prop];
+                
+                Object.defineProperty(obj, prop, {
+                    get: () => value,
+                    set: (newVal) => {
+                        value = newVal;
+                        for (let cb of obj[`__mf-observers_${prop}__`]) cb(obj[prop]);
+                    },
+                });
+            }
         }
 
         obj[`__mf-observers_${prop}__`].push(callback);
+
+        if (triggerImmediately) callback(obj[prop]);
     }
 
-    if (triggerImmediately) callback(obj[prop]);
-}
+    /**
+        There is no 'observeMultiple()' or 'combineCallbacks()' primitive. Instead you can just use this pattern:
 
-export function observeMultiple(objsAndProps, callback, triggerImmediately = true) {
-    objsAndProps.forEach(x => observe(x[0], x[1], callback, false));
-    if (triggerImmediately) callback();
-}
+            {
+                observe(obj,     'prop1', cb, false),
+                observe(obj,     'prop2', cb, false),
+                listen(pickerEl, 'input', cb, false),
+                cb();
+                function cb() {
+                    console.log(`prop1 or prop2 or pickerEl changed!`);
+                }
+            }
+
+            -> Super clean and easy.
+
+            TODO: Maybe add this to `Idea - quote-unquote-framework`
+
+        Discussion of triggerImmediately arg:
+            The user will usually want `triggerImmediately = true` for observe(), but not when using it in combineCallbacks().
+            The user will usually want `triggerImmediately = false` for listen(),
+            -> We're not using default values to reduce footguns and keep consistency. (Not sure if that's the right choice)
+    */

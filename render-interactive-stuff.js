@@ -56,13 +56,11 @@ function Counter({ initialCount = 0, color = '#4a90e2' }) {
           /** @typedef {{count: number}} Counter */
           this.count = initialCount;
 
-          observe(this, 'count', count => {
-              qs(this, '.count').textContent = count;
-          })
+          observe(this, 'count', count => { qs(this, '.count').textContent = count; }, true)
 
-          listen(qs(this, '.increment'), 'click', () => { this.count++; });
-          listen(qs(this, '.decrement'), 'click', () => { this.count--; });
-          listen(qs(this, '.reset'),     'click', () => { this.count = initialCount; });
+          listen(qs(this, '.increment'), 'click', () => { this.count++; }, false);
+          listen(qs(this, '.decrement'), 'click', () => { this.count--; }, false);
+          listen(qs(this, '.reset'),     'click', () => { this.count = initialCount; }, false);
       },
       dbgname: Counter.name,
   });
@@ -98,12 +96,12 @@ function AnimatedCard({ title, description, color = '#e74c3c' }) {
             listen(card, 'mouseenter', () => {
                 card.style.transform = 'scale(1.05) translateY(-5px)';
                 card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
-            });
+            }, false);
 
             listen(card, 'mouseleave', () => {
                 card.style.transform = 'scale(1) translateY(0)';
                 card.style.boxShadow = 'none';
-            });
+            }, false);
         },
         dbgname: AnimatedCard.name,
     });
@@ -162,7 +160,7 @@ function ToggleSwitch({ label = 'Toggle', initialState = false }) {
             listen(switchEl, 'click', () => {
                 isActive = !isActive;
                 switchEl.classList.toggle('active', isActive);
-            });
+            }, false);
         },
         dbgname: ToggleSwitch.name,
     });
@@ -198,7 +196,7 @@ export function renderInteractiveStuff() {
             console.log(`Initial count: ${counter.count}`);
             observe(counter, 'count', count => {
                 console.log(`Observed count: ${count}`);
-            })
+            }, true)
         },
         dbgname: renderInteractiveStuff.name
     })
