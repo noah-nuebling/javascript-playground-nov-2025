@@ -16,13 +16,14 @@
             [Nov 2025]
         TODO:
             -> Maybe move this into the `Idea - quote-unquote-framework` doc.
+        TODO: 'polluting the global name space' is usually not done in JS. Component libraries would have to rename this to avoid conflicts. Maybe shouldn't do this at all, and just make outle() a regular function.
     */
     String.prototype.outlet = function (id) {
         return `<div class="outlet ${id}" style="display: contents">${this}</div>` /// LLM told me to use `style="display: contents"`. Possibly paranoia/overengineering.
     }
 
     export const getOutlet = (...args) => {
-        if (args.length >= 2) return qs(args[0], `.outlet.${args[1]} > *`);
+        if (args.length >= 2) return qs(args[0],  `.outlet.${args[1]} > *`);
         else                  return qs(document, `.outlet.${args[0]} > *`);
     }
 

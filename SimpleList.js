@@ -4,23 +4,29 @@ import {wrapInCustomElement, observe, debounce} from "./mini-framework.js";
 import { dedent, mflog } from "./utils.js"
 
 // TODO: Make this work when this.items contains multiple identical objects.
+//      (items cannot be cache-keys)
 // TODO: Maybe allow items having a `key` attribute which they are identified by instead of relying on object-equality ?
 // TODO: Consider if the automatic tracking of the items array is even worth the complexity. Why not have NSTableView style
-//      reloadItems(), insertItems() etc. APIs? (Although the insert stuff is kind of annoying since you have to do diffing yourself IIRC? [Nov 2025])
-// TODO: Maybe mention that if users want to track updates to item contents and update the DOM accordingly, they can use wrapInCustomElement()
+//      reloadItems(), insertItems() etc. APIs? (Although the insert stuff in NSTableView *is* kind of annoying since you have to do diffing yourself IIRC? [Nov 2025])
+// TODO: Maybe mention that if users want to track updates to item contents and update the items in the DOM accordingly, they can use wrapInCustomElement()
 //      (Exactly the same pattern as when declaring components)
 
-/** @typedef { HTMLElement & { items: any[] } List */
+/** @typedef { HTMLElement & { items: any[], observeItems: (model: any, prop: string) => void}} List */
 export function List(renderItem) {
 
     let html = ""
     html = wrapInCustomElement(html, {
         dbgname: "List",
-
-        /** @this {List} */
-        connected() {
+        /** @this {List} */connected() {
 
             this.items = [];
+
+            this.observeItems = (model, prop) => { // Convenience function for clients.
+                observe(model, prop, () => {
+                    model[prop] = List.wrapArrayInObservableProxy(model[prop]);
+                    this.items = model[prop];
+                }, true)
+            }
 
             observe(this, 'items', () => {
 
@@ -34,66 +40,35 @@ export function List(renderItem) {
                 // Call render when the items array is mutated.
                 this.items.__mfobservableProxy_Callbacks.push(() => {
                     debounce(`List() observation (${this.dataset.instanceid})`, 0, () => { // debounce because Array.shift() triggers and observation callback for every element in the array. || TODO: Accessing instanceid here is hacky
-                        render.bind(this)()                                 // TODO: Our tests in render-interactive-stuff.js should still work with this disabled.
+                        document.startViewTransition(render.bind(this));             // TODO; Maybe make this configurable
                     })
                 })
 
             }, false);
 
-            let item2DOMNodeCache = new Map();
-            let item2ElementCache = new Map();
+
+            let itemsToElements = new Map();
 
             /** @this {List} */
             function render() {
 
-                // Update the DOM to match this.items
+                // Complex implementation – diff to find out which items in the model have been inserted / moved / removed,
+                //      and then apply those same modifications to the DOM nodes.
+                //      (Necessary over simply rerendering everything or re-adding all the DOM nodes, to preserve the <select> selection in my testing – maybe other things) [Nov 2025]
 
-                mflog(`List: RENDER`);
-
-                if ((0)) {
-
-                    // Simple implementation – just re-render everything
-
-                    let newHTML = '';
-                    for (let item of this.items)
-                        newHTML += renderItem(item);
-                    this.innerHTML = newHTML;
-                }
-
-                if ((1)) {
-
-                    // Complex implementation – diff to find out which items in the model have been inserted / moved / removed,
-                    //      and then apply those same modifications to the DOM nodes.
-                    //      (Necessary to preserve the <select> selection in my testing – maybe other things) [Nov 2025]
-
-                    // Make the DOM match this.items.
-                    {
-                        for (let i = 0; i < this.items.length; i++) {
-                            if (item2DOMNodeCache.get(this.items[i])) {
-                                if (item2DOMNodeCache.get(this.items[i]) === this.children[i]) {
-                                    mflog(`List: sameee (${i}) (${this.items.map(x => x.id)})`); // The existing node is already at the right index – do nothing
-                                }
-                                else {
-                                    this.insertBefore(item2DOMNodeCache.get(this.items[i]), this.children[i]); // Move the existing node to i
-                                    mflog(`List: move (${i}) (${this.items.map(x => x.id)})`);
-                                }
-                            }
-                            else {
-                                this.insertBefore(_renderHTML(renderItem(this.items[i])), this.children[i]); // Insert the new node at i
-                                mflog(`List: insert (${i}) (${this.items.map(x => x.id)})`);
-                            }
-                        }
-                        while (this.children.length > this.items.length) {
-                            this.lastChild.remove(); // Remove nodes who no longer have corresponding entries in this.items
-                            mflog(`List: remove`);
-                        }
+                // Update the DOM to match this.item
+                {
+                    for (let i = 0; i < this.items.length; i++) {
+                        if (itemsToElements.get(this.items[i]))   this.insertBefore(itemsToElements.get(this.items[i]), this.children[i]); // Move the existing node to i
+                        else                                      this.insertBefore(_renderHTML(renderItem(this.items[i])), this.children[i]); // Insert the new node at i
                     }
-
-                    // Update cache
-                    item2DOMNodeCache = new Map();
-                    for (let i = 0; i < this.children.length; i++)
-                        item2DOMNodeCache.set(this.items[i], this.children[i]);
+                    while (this.children.length > this.items.length) this.lastChild.remove(); // Remove nodes who no longer have corresponding entries in this.items
                 }
+
+                // Update cache
+                itemsToElements = new Map();
+                for (let i = 0; i < this.children.length; i++)
+                    itemsToElements.set(this.items[i], this.children[i]);
             }
         },
     })
