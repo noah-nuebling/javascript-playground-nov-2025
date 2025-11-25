@@ -21,7 +21,7 @@ export function List(renderItem) {
 
             this.items = [];
 
-            this.observeItems = (model, prop) => { // Convenience function for clients.
+            this.observeItems = (model, prop) => { // Convenience API for clients.
                 observe(model, prop, () => {
                     model[prop] = List.wrapArrayInObservableProxy(model[prop]);
                     this.items = model[prop];
@@ -40,7 +40,9 @@ export function List(renderItem) {
                 // Call render when the items array is mutated.
                 this.items.__mfobservableProxy_Callbacks.push(() => {
                     debounce(`List() observation (${this.dataset.instanceid})`, 0, () => { // debounce because Array.shift() triggers and observation callback for every element in the array. || TODO: Accessing instanceid here is hacky
-                        document.startViewTransition(render.bind(this));             // TODO; Maybe make this configurable
+                        //document.startViewTransition(() => {
+                            render.bind(this)();
+                        //});             // TODO; Maybe make this configurable || This breaks interactions and creates ghosting on the whole page. [Nov 2025]
                     })
                 })
 
