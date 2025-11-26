@@ -21,14 +21,14 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
             [Nov 2025]
         TODO:
             -> Maybe move this into the `Idea - quote-unquote-framework` doc.
-        TODO: 'polluting the global name space' is usually not done in JS. Component libraries would have to rename this to avoid conflicts. Maybe shouldn't do this at all, and just make outle() a regular function.
+        TODO: 'polluting the global name space' is usually not done in JS. Component libraries would have to rename this to avoid conflicts. Maybe shouldn't do this at all, and just make outlet() a regular function.
     */
     String.prototype.outlet = function (id) {
         return `<div class="outlet ${id}" style="display: contents">${this}</div>` /// LLM told me to use `style="display: contents"`. Possibly paranoia/overengineering.
     }
 
     export const getOutlet = (...args) => {
-        if (args.length >= 2) return qs(args[0],  `.${args[1]} > *`); /// TODO: (This doesn't work for nested components) (But if it's simple users feel confident switching back to qs() for complex cases?)
+        if (args.length >= 2) return qs(args[0],  `.${args[1]} > *`); /// TODO: (This kinda sucks for querying nested components) (But if it's simple users feel confident switching back to qs() for complex cases?)
         else                  return qs(document, `.${args[0]} > *`);
     }
 

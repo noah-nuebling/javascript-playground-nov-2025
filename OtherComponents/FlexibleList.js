@@ -18,7 +18,6 @@ import { dedent, mflog } from "../utils.js"
 //      - Simpler implementation
 //      - Tracks updates to this.items and updates the DOM automatically.
 //
-//    (It would be more
 
 // TODO: Make this work when this.items contains multiple identical objects.
 //      (items cannot be keys of the (modelItem<->DOM-child) association – See __MFListChild)
@@ -153,7 +152,7 @@ function error_List_notanarray(items) {
         instead.
         
         (It's not hard to debug just annoying so maybe this shouldn't be an error. 
-        Also javascript pros won't make that mistake.) 
+        Also javascript pros won't make that mistake.)
         [Nov 2025]
     `))
 }

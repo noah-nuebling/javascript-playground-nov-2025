@@ -196,28 +196,39 @@ export function test_StuffInteractive() {
     html = wrapInCustomElement(html, {
         connected() {
 
-            let counter = /**@type{Counter}*/getOutlet(this, 'first-counter');
-            mflog(`Initial count: ${counter.count}`);
-            observe(counter, 'count', count => {
-                mflog(`Observed count: ${count}`);
-            }, true)
 
-            let model = {}
-            model.switches = [
-                { id: "notifs",   label: 'Notifications',   state: true },
-                { id: "darkmode", label: 'Dark Mode',       state: false },
-            ];
-            observe(model, 'switches', () => {
+            // Bind the first counter
+            {
+                let counter = /**@type{Counter}*/getOutlet(this, 'first-counter');
+                mflog(`Initial count: ${counter.count}`);
+                observe(counter, 'count', count => {
+                    mflog(`Observed count: ${count}`);
+                }, true)
+            }
 
-                getOutlet('toggleSwitches').items = model.switches; /// TODO: Maybe make interface ".reloadItems(items)" "replaceContent(items)" to make it clear that all DOM nodes will be destroyed – and components will have to be re-established.
+            // Bind switches
+            {
+                let model = {}
+                model.switches = [
+                    {id: "notifs", label: 'Notifications', state: true},
+                    {id: "darkmode", label: 'Dark Mode', state: false},
+                ];
+                observe(model, 'switches', () => {
 
-                for (let switchModel of model.switches) {
-                    // TODO: Nesting getOutlet() is a bit ugly. So we're using qs(). Maybe just have ppl use qs()?
-                    observe(qs(`.toggleSwitches .${switchModel.id} > *`), 'isActive',   (newValue) => { switchModel.state = newValue; });
-                    observe(switchModel, 'state',                                       () => { mflog(`switch state: ${Number(switchModel.state)} ('${switchModel.label}')`); });
-                }
+                    getOutlet('toggleSwitches').items = model.switches; /// TODO: Maybe make interface ".reloadItems(items)" "replaceContent(items)" to make it clear that all DOM nodes will be destroyed – and components will have to be re-established.
 
-            }, true);
+                    for (let switchModel of model.switches) {
+                        // TODO: Nesting getOutlet() is a bit ugly. So we're using qs(). Maybe just have ppl use qs()? Or make getOutlet() better?
+                        observe(qs(`.toggleSwitches .${switchModel.id} > *`), 'isActive', (newValue) => {
+                            switchModel.state = newValue;
+                        });
+                        observe(switchModel, 'state', () => {
+                            mflog(`switch state: ${Number(switchModel.state)} ('${switchModel.label}')`);
+                        });
+                    }
+
+                }, true);
+            }
 
 
 
