@@ -215,7 +215,7 @@ export function test_StuffInteractive() {
                 ];
                 observe(model, 'switches', () => {
 
-                    getOutlet('toggleSwitches').items = model.switches; /// TODO: Maybe make interface ".reloadItems(items)" "replaceContent(items)" to make it clear that all DOM nodes will be destroyed – and components will have to be re-established.
+                    getOutlet('toggleSwitches').items = model.switches; /// TODO: Maybe make interface ".reloadItems(items)" or "replaceContent(items)" to make it clear that all DOM nodes will be destroyed – and components will have to be re-established.
 
                     for (let switchModel of model.switches) {
                         // TODO: Nesting getOutlet() is a bit ugly. So we're using qs(). Maybe just have ppl use qs()? Or make getOutlet() better?

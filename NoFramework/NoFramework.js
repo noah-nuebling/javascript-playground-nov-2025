@@ -21,7 +21,7 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
             [Nov 2025]
         TODO:
             -> Maybe move this into the `Idea - quote-unquote-framework` doc.
-        TODO: 'polluting the global name space' is usually not done in JS. Component libraries would have to rename this to avoid conflicts. Maybe shouldn't do this at all, and just make outlet() a regular function.
+        TODO: 'polluting the global name space' is usually not done in JS. (Says Claude) Component libraries would have to rename this to avoid conflicts. Maybe shouldn't do this at all, and just make outlet() a regular function.
     */
     String.prototype.outlet = function (id) {
         return `<div class="outlet ${id}" style="display: contents">${this}</div>` /// LLM told me to use `style="display: contents"`. Possibly paranoia/overengineering.
@@ -74,7 +74,7 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
 
 // MARK: 'Reactive' primitives for UI <-> model syncing
 
-    export const listen = function (obj, eventname, callback, triggerImmediately) { 
+    export const listen = function (obj, eventname, callback, triggerImmediately = false) {
         obj.addEventListener(eventname, () => callback())
         if (triggerImmediately) callback();
     }
@@ -90,9 +90,9 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
             if (!obj)                            throw error_observe_nilobj(obj);
             
             //  Catch footgun of trying to observe a computed property, like `HTMLSelectElement.value`
-            if (!obj[`__mf-observers_${prop}__`])
+            if (!obj[`__MFObservationCallbacks_${prop}`])
             {
-                // Look up the propertyDescriptor of obj.prop
+                // Look up the propertyDescriptor of obj.prop in the prototype-chain
                 let desc;
                 for (let o = obj; o; o = Object.getPrototypeOf(o)) {
                     if (Object.getOwnPropertyDescriptor(o, prop)) {
@@ -111,11 +111,11 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
             //      Weird edge case with this solution: If you observe multiple properties with the same callback function, this will prevent recursive re-entering of that function, but only if you don't wrap the callback function in a closure like () => cb(). [Nov 2025]
             //          ... I don't see a general solution. Maybe just pray that this doesn't happen in practice? Maybe turn this into a 'nonReenteringWrapper()` helper function that users can use if they ever have such problems?
             //      TODO: Is there a solution without weird edge-cases? Is this even worth having in the codebase or can users just handle this problem themselves?
-            //      Alternative idea: You could defer all observation callbacks triggered by other observation callbacks. But that would also be unintuitive for the common case I think?
+            //      Alternative idea: You could defer all observation callbacks triggered by other observation callbacks. But that would also be unintuitive for the common case I think? Because the user might have to wait for updates with setTimeout();
             let rawCallback = callback;
             rawCallback.__MFRecursionTracker = 0;
             callback = (newValue) => {
-                if (rawCallback.__MFRecursionTracker > 0) {
+                if (rawCallback.__MFRecursionTracker > 0) { /// TODO: Maybe update the internal prefixes from MF -> NF (NoFramework) or whatever we'll end up calling this.
                     rawCallback.__MFRecursionTracker += 1;
                     return;
                 }
@@ -133,8 +133,8 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
 
         // Core logic
         {
-            if (!obj[`__mf-observers_${prop}__`]) { // First time observing this property
-                obj[`__mf-observers_${prop}__`] = [];
+            if (!obj[`__MFObservationCallbacks_${prop}`]) { // First time observing this property
+                obj[`__MFObservationCallbacks_${prop}`] = [];
 
                 let value = obj[prop];
 
@@ -143,12 +143,12 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
                     set: (newVal) => {
                         if (value === newVal) return;
                         value = newVal;
-                        for (let cb of obj[`__mf-observers_${prop}__`]) cb(obj[prop]);
+                        for (let callback of obj[`__MFObservationCallbacks_${prop}`]) callback(newVal);
                     },
                 });
             }
 
-            obj[`__mf-observers_${prop}__`].push(callback);
+            obj[`__MFObservationCallbacks_${prop}`].push(callback);
 
             if (triggerImmediately) callback(obj[prop]);
         }
@@ -178,6 +178,7 @@ import { dedent } from "../utils.js"; // TODO: Organize these internal helpers.
             -> Update: TODO: Reconsider: Actually, I think you *never* need the triggerImmediately arg on listen(), since you'd never
                 initialize the model from the DOM. You'd initialize the DOM from the model. And you observe() the model.
                 And triggerImmediately automates initialization when you do that.
+                -> Only reason to have triggerImmediately on listen() is for consistency with observe();
                 TODO: Reconsider: Is it really good to have a wrapper around addEventListener()? Similar observe()/listen() API is nice, but the wrapper doesn't do anything.
     */
 
