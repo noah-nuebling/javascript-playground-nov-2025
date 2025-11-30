@@ -1,7 +1,7 @@
 
 
-import {wrapInCustomElement, observe, debounce} from "../NoFramework/NoFramework.js";
-import { dedent, mflog } from "../utils.js"
+import {wrapInCustomElement, observe, debounce} from "../NoFramework.js";
+import { dedent, mflog } from "../../utils.js"
 
 
 // Comparison with SimpleList.js
