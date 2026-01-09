@@ -191,7 +191,7 @@ observe(() => qs('.dropdown').classList.toggle('open', uiModel.isOpen), [uiModel
 
 Then use any live-reload tool (Python's `livereload`, `browser-sync`, VS Code Live Server). When files change, the page reloads, but state in `persistentModel` survives in `window.localStorage`.
 
-If you store transient state like the in a `persistentModel`, you can continue exactly where you left off before the reload.
+If you store transient state like the scroll position in a `persistentModel`, you can continue exactly where you left off before the reload.
 
 (CAVEAT: I haven't implemented / tested `persistentModel()`, yet [Jan 2026])
 
