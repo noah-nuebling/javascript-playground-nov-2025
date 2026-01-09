@@ -213,9 +213,10 @@ A common objection: "Sure, vanilla JS works for simple stuff, but for anything c
 Consider: People built Photoshop, Microsoft Office, and entire operating systems with imperative UI code (UIKit, AppKit, Win32). The idea that a web app is "too complex" to write without "Reactivity" doesn't hold up.
 
 Yes, you *can* mess up state synchronization with manual bindings. But:
-- The bug is immediately visible in the UI.
+- Getting it right isn't rocket science (two-way bindings)
+- Bug's are immediately visible in the UI.
 - It's easy to find and fix in your code.
-- Getting this right isn't actually hard (two-way bindings)
+
 
 React's solution trades this simple problem for complex ones:
 - Virtual DOM diffing you can't easily inspect
