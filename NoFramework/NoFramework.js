@@ -92,7 +92,7 @@ import { dedent, mflog } from "../utils.js"; // TODO: Organize these internal he
             
             //  Catch footgun of trying to observe a computed property, like `HTMLSelectElement.value`
             //      TODO: This validation could lead to conflicts if a component-library uses something other than `__MFObservationCallbacks_${prop}` 
-            //          – maybe this validation should be looser? Or specific to HTMLSelectElement.value?
+            //          – maybe this validation should be looser? Or specific to HTMLSelectElement.value? Should see how this works in practise.
             if (!obj[`__MFObservationCallbacks_${prop}`])
             {
                 // Look up the propertyDescriptor of obj.prop in the prototype-chain
@@ -229,7 +229,7 @@ import { dedent, mflog } from "../utils.js"; // TODO: Organize these internal he
 
 
 
-// MARK: Errors
+// MARK: Errors (/ Documentation)
 
 function error_observe_infinite(obj, prop) {
     return new Error(dedent(`
