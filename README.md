@@ -1,5 +1,5 @@
 
-Writing simple web stuff.
+Writing simple web stuff with 'NoFramework'
 Also see `Idea - quote-unquote-framework` in our notes repo.
 
 Couldn't get any of the VSCode plugins for inline-HTML autocomplete to work properly - In Webstorm this all works super well out of the box. (
@@ -11,9 +11,9 @@ Running:
     open -a /Applications/Google\ Chrome.app/ --args --allow-file-access-from-files
 - Then just open index.html
 
-Additional notes on NoFramework [Dec 2025]
+Update: [Dec 2025]
 
-    - This Reddit thread sounds like **there is interest** in something like this:
+    - This Reddit thread sounds like **there is interest** in something like NoFramework:
         https://www.reddit.com/r/AskProgramming/comments/1puhkhg/why_is_the_modern_web_so_slow/
 
     - Recently been thinking: Biggest downside to current NoFramework is **no hot reloading**
