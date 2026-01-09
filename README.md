@@ -1,4 +1,4 @@
-## NoFramework Demo (Written by Claude 4.5 Opus based on contents of this repo [Jan 2026])
+## NoFramework Demo (Written in collaboration with Claude 4.5 Opus based on the code in this repo [Jan 2026])
 
 **Problem:** Modern web frameworks solve real problems—components, state management, reactivity — but come with 1000s of dependencies that inevitably break, slow compilation, 'magic' that is hard to reason about, and bad performance.
 
