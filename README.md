@@ -1,6 +1,6 @@
 
 Writing simple web stuff with 'NoFramework'
-Also see `Idea - quote-unquote-framework` in our notes repo.
+Also see `Idea - quote-unquote-framework` in our public notes repo.
 
 Couldn't get any of the VSCode plugins for inline-HTML autocomplete to work properly - In Webstorm this all works super well out of the box. (
 This is very useful for the quote-unquote-framework) [Nov 2025] 
@@ -28,6 +28,8 @@ Update: [Dec 2025]
             -> More details: See Claude's summary titled 
                 "Hot Reloading for Minimal Web Component Framework" 
                 at the end of this conversation: https://claude.ai/share/ddce4efb-81b6-4fcd-8fbb-89972786632d
+            
+            TODO: Test this in Test_StuffInteractive.js
 
     - Recently heard Adam Wathan (Tailwind creator) talk about something similar - a framework that uses web components to give you much of the same ergonomics of react. i think he said it only made economical sense to sell it and keep it closed source. Was only listening with one ear. [Dec 25 2025]
 
