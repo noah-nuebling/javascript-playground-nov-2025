@@ -256,7 +256,7 @@ Caveat: Some of the APIs implemented in the NoFramework.js file don't exactly ma
 
 ---
 
-# Personal Notes
+# Notes
 
 Writing simple web stuff with 'NoFramework'
 Also see `Idea - quote-unquote-framework` in our public notes repo.
