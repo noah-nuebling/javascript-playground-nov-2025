@@ -1,5 +1,5 @@
-import { dedent, mflog } from '../utils.js'
-import { observe, wrapInCustomElement, qs } from "../NoFramework/NoFramework.js"
+import { dedent, mflog } from '../../utils.js'
+import { observe, wrapInCustomElement, qs } from "../NoFramework.js"
 
 /**
     - Performance test result for FastList(): [Nov 2025]
