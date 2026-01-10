@@ -230,7 +230,7 @@ Consider: The NoFramework is a (more simple) way to write the same patterns that
 
 | Pattern | AppKit/UIKit | NoFramework |
 |---------|--------------|-------------|
-| Declaring view hierarchies | Interface Builder (XIB/Storyboard) | HTML/CSS in template strings |
+| Declaring view hierarchies | Interface Builder | HTML/CSS in template strings |
 | Loading view hierarchies | `NSViewController` | `customElement()` |
 | Post-load initialization | `viewDidLoad`, `awakeFromNib`, etc. | `init()` |
 | References into view hierarchies | `@IBOutlet` | `qs()` (querySelector) |
