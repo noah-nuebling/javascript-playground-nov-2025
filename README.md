@@ -60,6 +60,8 @@ function TextField({ label, placeholder }) {
 }
 ```
 
+Arguably this is better than TailwindCSS since you can add linebreaks and comments, and dont have to learn another abstraction layer.
+
 **Stage 3: Make it interactive**
 
 Now we have HTML and CSS in the component. 
