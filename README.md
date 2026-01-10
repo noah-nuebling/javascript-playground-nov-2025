@@ -184,11 +184,12 @@ const uiModel       = persistentModel('ui',       { isOpen: false });
 // Now you can do DOM <-> model bindings like usual:
 
 // Bind Model <- DOM
-//  (When the model is updated, it automatically saves to window.localStorage.)
 listen(() => uiModel.isOpen = !uiModel.isOpen, [qs('.toggle-button'), 'click']);
 
 // Bind DOM <- Model
 observe(() => qs('.dropdown').classList.toggle('open', uiModel.isOpen), [uiModel, 'isOpen']);
+
+// -> After a reload, the `.dropdown` will still be open!
 ```
 
 Then use any live-reload server (Python's `livereload`, `browser-sync`, VS Code Live Server). When files change, the page reloads, but state in `persistentModel` survives in `window.localStorage`.
